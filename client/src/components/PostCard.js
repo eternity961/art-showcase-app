@@ -6,7 +6,7 @@ import { Card, CardContent, CardMedia, Typography, Button, Box } from '@mui/mate
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import CommentIcon from '@mui/icons-material/Comment';
 
-function PostCard({ post, onUpdate }) {
+function PostCard({ post, onUpdate, showActions=true }) {
   const { user } = useContext(AuthContext);
 
   const handleLike = async () => {
@@ -34,7 +34,7 @@ function PostCard({ post, onUpdate }) {
           By <Link to={`/profile/${post.user._id}`}>{post.user.username}</Link> | {post.category}
         </Typography>
         <Typography variant="body1" sx={{ mt: 1 }}>{post.content}</Typography>
-        <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+        {showActions && <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
           <Button
             startIcon={<ThumbUpIcon />}
             onClick={handleLike}
@@ -51,7 +51,7 @@ function PostCard({ post, onUpdate }) {
           >
             Comments
           </Button>
-        </Box>
+        </Box>}
       </CardContent>
     </Card>
   );

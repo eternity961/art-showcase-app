@@ -58,7 +58,7 @@ function JudgeDashboard() {
       <Box>
         {posts.map(post => (
           <Box key={post._id} sx={{ mb: 2 }}>
-            <PostCard post={post} onUpdate={() => {}} />
+            <PostCard post={post} onUpdate={() => {}} showActions={false}/>
             <Button
               variant="contained"
               onClick={() => setSelectedPost(post._id)}
