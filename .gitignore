@@ -1,0 +1,56 @@
+# Node modules
+node_modules/
+client/node_modules/
+
+# Build output
+build/
+client/build/
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Binaries
+*.exe
+*.out
+*.app
+*.zip
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# IDE/Editor settings
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Coverage reports
+coverage/
+
+# Optional npm cache and debug logs
+.npm/
+.cache/
+
+# Server uploads or static assets
+uploads/
+public/uploads/
+tmp/
+temp/
