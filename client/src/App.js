@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import PostDetail from './pages/PostDetail';
+import PostPage from './pages/PostPage';
 import Messenger from './pages/Messenger';
 import Notifications from './pages/Notifications';
 import AdminDashboard from './pages/AdminDashboard';

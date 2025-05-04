@@ -103,23 +103,26 @@ function Profile() {
       )}
 
       {/* Display List of Posts */}
-      <Box sx={{ mt: 4 }}>
-        <Typography variant="h5" gutterBottom>
-          {profile.username}'s Posts
-        </Typography>
-        {posts.length === 0 ? (
-          <Typography>No posts yet.</Typography>
-        ) : (
-          posts.map((post) => (
-            <Box key={post._id} sx={{ mb: 2 }}>
-              {/* Link to the Post Detail Page */}
-              <Link to={`/post/${post._id}`} style={{ textDecoration: 'none' }}>
-                <PostCard post={post} />
-              </Link>
-            </Box>
-          ))
-        )}
-      </Box>
+      {/* Display List of Posts only if user role is "user" */}
+{profile.role === 'user' && (
+  <Box sx={{ mt: 4 }}>
+    <Typography variant="h5" gutterBottom>
+      {profile.username}'s Posts
+    </Typography>
+    {posts.length === 0 ? (
+      <Typography>No posts yet.</Typography>
+    ) : (
+      posts.map((post) => (
+        <Box key={post._id} sx={{ mb: 2 }}>
+          <Link to={`/post/${post._id}`} style={{ textDecoration: 'none' }}>
+            <PostCard post={post} />
+          </Link>
+        </Box>
+      ))
+    )}
+  </Box>
+)}
+
     </Container>
   );
 }

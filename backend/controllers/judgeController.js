@@ -32,7 +32,7 @@ exports.evaluatePost = async (req, res) => {
       user: post.user,
       type: 'judge',
       content: `Your post was evaluated by a judge`,
-      relatedId: evaluation._id,
+      relatedId: post._id,
     });
     await notification.save();
     req.io.to(post.user.toString()).emit('notification', notification);
