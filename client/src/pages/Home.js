@@ -4,6 +4,7 @@ import { AuthContext } from '../contexts/AuthContext';
 import PostCard from '../components/PostCard';
 import PostForm from '../components/PostForm';
 import { Container, Typography, Box } from '@mui/material';
+import { Navigate } from 'react-router-dom';
 
 function Home() {
   const { user } = useContext(AuthContext);
@@ -18,8 +19,10 @@ function Home() {
         console.error('Error fetching posts:', err);
       }
     };
-    fetchPosts();
-  }, []);
+    if (user?.role === 'user') {
+      fetchPosts();
+    }
+  }, [user]);
 
   const handlePostCreated = (newPost) => {
     setPosts([newPost, ...posts]);
@@ -29,6 +32,16 @@ function Home() {
     setPosts(posts.map(p => p._id === updatedPost._id ? updatedPost : p));
   };
 
+  // 🔁 Redirect logic based on role
+  if (user?.role === 'admin') {
+    return <Navigate to="/admin" replace />;
+  }
+
+  if (user?.role === 'judge') {
+    return <Navigate to="/judge" replace />;
+  }
+
+  // ✅ Default user content
   return (
     <Container sx={{ py: 4 }}>
       <Typography variant="h4" gutterBottom>
