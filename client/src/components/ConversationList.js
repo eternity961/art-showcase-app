@@ -1,12 +1,14 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { List, ListItem, ListItemText, ListItemAvatar, Avatar } from '@mui/material';
+import { Link } from 'react-router-dom';
 
 function ConversationList({ conversations, onSelect }) {
+  const currentUser = JSON.parse(localStorage.getItem('user'));
+
   return (
     <List>
       {conversations.map((conv) => {
-        const otherUser = conv.participants.find(p => p._id !== localStorage.getItem('user')?.id);
+        const otherUser = conv.participants.find(p => p._id !== currentUser.id);
         return (
           <ListItem
             button
@@ -16,9 +18,12 @@ function ConversationList({ conversations, onSelect }) {
             to={`/messenger?conv=${conv._id}`}
           >
             <ListItemAvatar>
-              <Avatar src={otherUser?.profile.avatar} />
+              <Avatar src={otherUser?.profile?.avatar} />
             </ListItemAvatar>
-            <ListItemText primary={otherUser?.username} secondary={conv.messages[conv.messages.length - 1]?.content} />
+            <ListItemText
+              primary={otherUser?.username || 'Unknown User'}
+              secondary={conv.messages?.[conv.messages.length - 1]?.content || ''}
+            />
           </ListItem>
         );
       })}

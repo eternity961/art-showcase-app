@@ -4,6 +4,7 @@ import api from '../utils/api';
 import { AuthContext } from '../contexts/AuthContext';
 import ConversationList from '../components/ConversationList';
 import MessageItem from '../components/MessageItem';
+import MessageButton from '../components/MessageButton';
 import { Container, Box, TextField, Button, Grid, Typography } from '@mui/material';
 
 function Messenger() {
@@ -66,8 +67,14 @@ function Messenger() {
 
   return (
     <Container sx={{ py: 4 }}>
+      <MessageButton onNewConversation={(conv) => {
+  setSelectedConv(conv._id);
+  setMessages(conv.messages || []);
+  setConversations(prev => [conv, ...prev.filter(c => c._id !== conv._id)]);
+}} />
+
       <Typography variant="h4" gutterBottom>
-        Messenger
+        Messenges
       </Typography>
       <Grid container spacing={2}>
         <Grid item xs={12} md={4}>
@@ -95,7 +102,7 @@ function Messenger() {
               </Box>
             </Box>
           ) : (
-            <Typography>Select a conversation</Typography>
+            <Typography></Typography>
           )}
         </Grid>
       </Grid>
