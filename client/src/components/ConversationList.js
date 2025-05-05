@@ -21,7 +21,7 @@ function ConversationList({ conversations, onSelect }) {
               <Avatar src={otherUser?.profile?.avatar} />
             </ListItemAvatar>
             <ListItemText
-              primary={otherUser?.username || 'Unknown User'}
+              primary={otherUser?.username}
               secondary={conv.messages?.[conv.messages.length - 1]?.content || ''}
             />
           </ListItem>

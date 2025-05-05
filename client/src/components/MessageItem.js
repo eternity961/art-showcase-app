@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Avatar } from '@mui/material';
 
 function MessageItem({ message, userId }) {
   const isSent = message.sender._id === userId;
@@ -7,18 +7,37 @@ function MessageItem({ message, userId }) {
   return (
     <Box
       sx={{
-        mb: 1,
-        p: 1,
-        bgcolor: isSent ? 'primary.light' : 'grey.200',
-        borderRadius: 2,
-        alignSelf: isSent ? 'flex-end' : 'flex-start',
-        maxWidth: '70%',
+        display: 'flex',
+        flexDirection: isSent ? 'row-reverse' : 'row',
+        alignItems: 'flex-start',
+        mb: 2,
       }}
     >
-      <Typography variant="body2">{message.content}</Typography>
-      <Typography variant="caption" color="text.secondary">
-        {new Date(message.timestamp).toLocaleTimeString()}
-      </Typography>
+      <Avatar
+        src={message.sender?.profile?.avatar}
+        alt={message.sender?.username}
+        sx={{ width: 32, height: 32, ml: isSent ? 1 : 0, mr: isSent ? 0 : 1 }}
+      />
+      <Box
+        sx={{
+          bgcolor: isSent ? 'primary.main' : 'grey.200',
+          color: isSent ? 'white' : 'black',
+          borderRadius: 2,
+          px: 2,
+          py: 1,
+          maxWidth: '70%',
+        }}
+      >
+        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+          {message.sender?.username || 'Unknown'}
+        </Typography>
+        <Typography variant="body2" sx={{ wordWrap: 'break-word' }}>
+          {message.content}
+        </Typography>
+        <Typography variant="caption" sx={{ display: 'block', textAlign: 'right', mt: 0.5 }} color="text.secondary">
+          {new Date(message.timestamp).toLocaleTimeString()}
+        </Typography>
+      </Box>
     </Box>
   );
 }
