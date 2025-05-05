@@ -21,6 +21,11 @@ function Navbar() {
         </Typography>
         {user ? (
           <>
+            {user.role === 'user' && (
+              <Button color="inherit" component={Link} to="/top-ranked">
+                Rankings
+              </Button>
+            )}
             <Button color="inherit" component={Link} to="/messenger">
               Messages
             </Button>

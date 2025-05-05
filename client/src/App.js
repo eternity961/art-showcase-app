@@ -10,10 +10,12 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import PostDetail from './pages/PostDetail';
 import PostPage from './pages/PostPage';
+import RankPage from './pages/RankPage';
 import Messenger from './pages/Messenger';
 import Notifications from './pages/Notifications';
 import AdminDashboard from './pages/AdminDashboard';
 import JudgeDashboard from './pages/JudgeDashboard';
+import TopRankedPost from './pages/TopRankedPost';
 
 function App() {
   return (
@@ -29,6 +31,8 @@ function App() {
             <Route path="notifications" element={<Notifications />} />
             <Route path="admin" element={<AdminDashboard />} />
             <Route path="judge" element={<JudgeDashboard />} />
+            <Route path="/rankings" element={<RankPage />} />
+            <Route path="/top-ranked" element={<TopRankedPost />} />
           </Route>
 
           {/* Public routes (no layout) */}

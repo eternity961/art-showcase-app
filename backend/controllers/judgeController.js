@@ -52,3 +52,52 @@ exports.getEvaluations = async (req, res) => {
     res.status(500).json({ message: 'Error fetching evaluations', error: err.message });
   }
 };
+
+exports.getUserRankings = async (req, res) => {
+  try {
+    const rankings = await Evaluation.aggregate([
+      {
+        $group: {
+          _id: '$user',
+          averageScore: { $avg: '$score' },
+          totalScore: { $sum: '$score' }
+        }
+      },
+      { $sort: { averageScore: -1 } }
+    ]);
+    
+    res.json(rankings);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch rankings', error: err.message });
+  }
+};
+
+exports.getTopRanked = async (req, res) => {
+  try {
+    // Find the evaluation with the highest score
+    const topEvals = await Evaluation.find()
+    .sort({ score: -1 })
+    .limit(10)
+    .populate({
+      path: 'post',
+      populate: {
+        path: 'user',
+        select: 'username profile.avatar',
+      },
+    });
+
+  // Filter out evaluations that have no valid post or user
+  const filtered = topEvals.filter(e => e.post && e.post.user);
+
+  const results = filtered.map(e => ({
+    post: e.post,
+    score: e.score,
+  }));
+
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+}
+
+
