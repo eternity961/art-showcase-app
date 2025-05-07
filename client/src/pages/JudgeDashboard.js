@@ -13,15 +13,16 @@ import {
 function JudgeDashboard() {
   const [posts, setPosts] = useState([]);
   const [category, setCategory] = useState('literal');
-  const [evaluations, setEvaluations] = useState({}); // holds form state per post
+  const [evaluations, setEvaluations] = useState({});
+  const [evaluatedPosts, setEvaluatedPosts] = useState(new Set()); // ✅ new state
 
-  // Fetch top 10 liked posts when category changes
   useEffect(() => {
     const fetchTopPosts = async () => {
       try {
         const response = await api.get(`/api/judge/top-posts?category=${category}`);
         setPosts(response.data);
-        setEvaluations({}); // reset evaluations state on category change
+        setEvaluations({});
+        setEvaluatedPosts(new Set()); // ✅ reset on category change
       } catch (err) {
         console.error('Error fetching top posts:', err);
       }
@@ -40,6 +41,8 @@ function JudgeDashboard() {
   };
 
   const toggleEvaluationForm = (postId) => {
+    if (evaluatedPosts.has(postId)) return; // ✅ don't open if already evaluated
+
     setEvaluations(prev => ({
       ...prev,
       [postId]: {
@@ -60,14 +63,16 @@ function JudgeDashboard() {
         score: Number(score),
         feedback,
       });
+
       setEvaluations(prev => ({
         ...prev,
         [postId]: {
+          ...prev[postId],
           isOpen: false,
-          score: '',
-          feedback: '',
         },
       }));
+
+      setEvaluatedPosts(prev => new Set(prev).add(postId)); // ✅ mark as evaluated
     } catch (err) {
       console.error('Error submitting evaluation:', err);
     }
@@ -93,25 +98,28 @@ function JudgeDashboard() {
       </TextField>
 
       {posts.map(post => {
-        const isOpen = evaluations[post._id]?.isOpen || false;
-        const score = evaluations[post._id]?.score || '';
-        const feedback = evaluations[post._id]?.feedback || '';
+        const postId = post._id;
+        const isOpen = evaluations[postId]?.isOpen || false;
+        const score = evaluations[postId]?.score || '';
+        const feedback = evaluations[postId]?.feedback || '';
+        const isEvaluated = evaluatedPosts.has(postId); // ✅ check evaluated
 
         return (
-          <Box key={post._id} sx={{ mb: 4 }}>
+          <Box key={postId} sx={{ mb: 4 }}>
             <PostCard post={post} showActions={false} />
             <Button
               variant="contained"
-              onClick={() => toggleEvaluationForm(post._id)}
+              onClick={() => toggleEvaluationForm(postId)}
               sx={{ mt: 1 }}
+              disabled={isEvaluated} // ✅ disable after evaluation
             >
-              {isOpen ? 'Cancel Evaluation' : 'Evaluate'}
+              {isEvaluated ? 'Evaluated' : (isOpen ? 'Cancel Evaluation' : 'Evaluate')}
             </Button>
 
-            {isOpen && (
+            {isOpen && !isEvaluated && (
               <Box
                 component="form"
-                onSubmit={(e) => handleSubmit(e, post._id)}
+                onSubmit={(e) => handleSubmit(e, postId)}
                 sx={{ mt: 2 }}
               >
                 <TextField
@@ -119,7 +127,7 @@ function JudgeDashboard() {
                   type="number"
                   value={score}
                   onChange={(e) =>
-                    handleFieldChange(post._id, 'score', e.target.value)
+                    handleFieldChange(postId, 'score', e.target.value)
                   }
                   fullWidth
                   required
@@ -130,7 +138,7 @@ function JudgeDashboard() {
                   label="Feedback"
                   value={feedback}
                   onChange={(e) =>
-                    handleFieldChange(post._id, 'feedback', e.target.value)
+                    handleFieldChange(postId, 'feedback', e.target.value)
                   }
                   fullWidth
                   multiline
