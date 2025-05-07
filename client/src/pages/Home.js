@@ -19,10 +19,8 @@ function Home() {
         console.error('Error fetching posts:', err);
       }
     };
-    if (user?.role === 'user') {
-      fetchPosts();
-    }
-  }, [user]);
+    fetchPosts();
+  }, []);
 
   const handlePostCreated = (newPost) => {
     setPosts([newPost, ...posts]);
@@ -32,16 +30,13 @@ function Home() {
     setPosts(posts.map(p => p._id === updatedPost._id ? updatedPost : p));
   };
 
-  // 🔁 Redirect logic based on role
   if (user?.role === 'admin') {
-    return <Navigate to="/admin" replace />;
-  }
-
-  if (user?.role === 'judge') {
-    return <Navigate to="/judge" replace />;
-  }
-
-  // ✅ Default user content
+        return <Navigate to="/admin" replace />;
+     }
+    
+      if (user?.role === 'judge') {
+        return <Navigate to="/judge" replace />;
+      }
   return (
     <Container sx={{ py: 4 }}>
       <Typography variant="h4" gutterBottom>
@@ -57,4 +52,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default Home; 
