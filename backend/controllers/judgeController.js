@@ -71,33 +71,55 @@ exports.getUserRankings = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch rankings', error: err.message });
   }
 };
-
 exports.getTopRanked = async (req, res) => {
   try {
-    // Find the evaluation with the highest score
-    const topEvals = await Evaluation.find()
-    .sort({ score: -1 })
-    .limit(10)
-    .populate({
-      path: 'post',
-      populate: {
-        path: 'user',
-        select: 'username profile.avatar',
-      },
-    });
+    const categories = ['literal', 'visual', 'vocal'];
+    const results = [];
 
-  // Filter out evaluations that have no valid post or user
-  const filtered = topEvals.filter(e => e.post && e.post.user);
+    for (const category of categories) {
+      // Fetch all posts in the category
+      const posts = await Post.find({ category }).populate('user', 'username profile.avatar');
 
-  const results = filtered.map(e => ({
-    post: e.post,
-    score: e.score,
-  }));
+      // Calculate max likes in this category
+      const maxLikes = Math.max(...posts.map(p => p.likes?.length || 0), 1); // prevent divide by 0
+
+      const scoredPosts = [];
+
+      for (const post of posts) {
+        const likes = post.likes?.length || 0;
+
+        // Get average judge score
+        const evaluations = await Evaluation.find({ post: post._id });
+        const avgJudgeScore = evaluations.length
+          ? evaluations.reduce((sum, e) => sum + e.score, 0) / evaluations.length
+          : 0;
+
+        const userScoreOutOf40 = (likes / maxLikes) * 40;
+        const judgeScoreOutOf60 = (avgJudgeScore / 10) * 60;
+
+        const finalScore = userScoreOutOf40 + judgeScoreOutOf60;
+
+        scoredPosts.push({
+          post,
+          userScore: userScoreOutOf40,
+          judgeScore: judgeScoreOutOf60,
+          finalScore,
+        });
+      }
+
+      // Sort and select top 3
+      const top10 = scoredPosts
+        .sort((a, b) => b.finalScore - a.finalScore)
+        .slice(0, 10);
+
+      results.push({ category, top10 });
+    }
 
     res.json(results);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
-}
+};
 
 
