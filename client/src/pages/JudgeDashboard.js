@@ -14,20 +14,34 @@ function JudgeDashboard() {
   const [posts, setPosts] = useState([]);
   const [category, setCategory] = useState('literal');
   const [evaluations, setEvaluations] = useState({});
-  const [evaluatedPosts, setEvaluatedPosts] = useState(new Set()); // ✅ new state
+  const [evaluatedPosts, setEvaluatedPosts] = useState(new Set());
 
   useEffect(() => {
-    const fetchTopPosts = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get(`/api/judge/top-posts?category=${category}`);
-        setPosts(response.data);
+        const [postRes, evalRes] = await Promise.all([
+          api.get(`/api/judge/top-posts?category=${category}`),
+          api.get('/api/judge/evaluations'),
+        ]);
+
+        const topPosts = postRes.data;
+        setPosts(topPosts);
         setEvaluations({});
-        setEvaluatedPosts(new Set()); // ✅ reset on category change
+
+        // Create a Set of post IDs that have already been evaluated by this judge
+        const evaluatedSet = new Set(
+          evalRes.data
+            .filter(ev => topPosts.some(p => p._id === ev.post._id))
+            .map(ev => ev.post._id)
+        );
+
+        setEvaluatedPosts(evaluatedSet);
       } catch (err) {
-        console.error('Error fetching top posts:', err);
+        console.error('Error fetching data:', err);
       }
     };
-    fetchTopPosts();
+
+    fetchData();
   }, [category]);
 
   const handleFieldChange = (postId, field, value) => {
@@ -41,7 +55,7 @@ function JudgeDashboard() {
   };
 
   const toggleEvaluationForm = (postId) => {
-    if (evaluatedPosts.has(postId)) return; // ✅ don't open if already evaluated
+    if (evaluatedPosts.has(postId)) return;
 
     setEvaluations(prev => ({
       ...prev,
@@ -72,7 +86,7 @@ function JudgeDashboard() {
         },
       }));
 
-      setEvaluatedPosts(prev => new Set(prev).add(postId)); // ✅ mark as evaluated
+      setEvaluatedPosts(prev => new Set(prev).add(postId));
     } catch (err) {
       console.error('Error submitting evaluation:', err);
     }
@@ -102,7 +116,7 @@ function JudgeDashboard() {
         const isOpen = evaluations[postId]?.isOpen || false;
         const score = evaluations[postId]?.score || '';
         const feedback = evaluations[postId]?.feedback || '';
-        const isEvaluated = evaluatedPosts.has(postId); // ✅ check evaluated
+        const isEvaluated = evaluatedPosts.has(postId);
 
         return (
           <Box key={postId} sx={{ mb: 4 }}>
@@ -111,9 +125,9 @@ function JudgeDashboard() {
               variant="contained"
               onClick={() => toggleEvaluationForm(postId)}
               sx={{ mt: 1 }}
-              disabled={isEvaluated} // ✅ disable after evaluation
+              disabled={isEvaluated}
             >
-              {isEvaluated ? 'Evaluated' : (isOpen ? 'Cancel Evaluation' : 'Evaluate')}
+              {isEvaluated ? 'Evaluated' : isOpen ? 'Cancel Evaluation' : 'Evaluate'}
             </Button>
 
             {isOpen && !isEvaluated && (
@@ -123,12 +137,10 @@ function JudgeDashboard() {
                 sx={{ mt: 2 }}
               >
                 <TextField
-                  label="Score (1-10)"
+                  label="Score (1–10)"
                   type="number"
                   value={score}
-                  onChange={(e) =>
-                    handleFieldChange(postId, 'score', e.target.value)
-                  }
+                  onChange={(e) => handleFieldChange(postId, 'score', e.target.value)}
                   fullWidth
                   required
                   inputProps={{ min: 1, max: 10 }}
@@ -137,9 +149,7 @@ function JudgeDashboard() {
                 <TextField
                   label="Feedback"
                   value={feedback}
-                  onChange={(e) =>
-                    handleFieldChange(postId, 'feedback', e.target.value)
-                  }
+                  onChange={(e) => handleFieldChange(postId, 'feedback', e.target.value)}
                   fullWidth
                   multiline
                   rows={4}
