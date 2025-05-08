@@ -111,6 +111,7 @@ function Navbar() {
         sx={{
           backgroundColor: '#1976d2',
           width: '100%',
+          padding: '0 28px',
         }}
       >
         <Toolbar sx={{ justifyContent: 'space-between' }}>
@@ -125,7 +126,7 @@ function Navbar() {
               fontSize: '1.3rem',
             }}
           >
-            Art Showcase
+           🎨 Art Showcase
           </Typography>
 
           {isMobile ? (
