@@ -76,7 +76,7 @@ function Home() {
   if (user?.role === 'judge') return <Navigate to="/judge" replace />;
 
   return (
-    <Box sx={{ backgroundColor: '#f9f9f9', minHeight: '100vh', py: 4 }}>
+    <Box sx={{  minHeight: '100vh', py: 4 }}>
       <Container maxWidth="lg">
         {/* Hero Section */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
