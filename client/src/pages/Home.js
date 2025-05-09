@@ -5,13 +5,15 @@ import {
   Box,
   TextField,
   MenuItem,
-  IconButton,
+  Button,
   Dialog,
   DialogTitle,
   DialogContent,
-  Fab
+  List,
+  ListItemButton,
+  ListItemText,
+  Paper,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import { Navigate } from 'react-router-dom';
 
@@ -76,69 +78,122 @@ function Home() {
   if (user?.role === 'judge') return <Navigate to="/judge" replace />;
 
   return (
-    <Box sx={{  minHeight: '100vh', py: 4 }}>
+    <Box sx={{ minHeight: '100vh', py: 4 }}>
       <Container maxWidth="lg">
         {/* Hero Section */}
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Typography variant="h3" fontWeight="bold">
+        {/* <Box sx={{ textAlign: 'center', mb: 4, px: 2 }}>
+          <Typography
+            variant="h3"
+            fontWeight="bold"
+            sx={{ fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3rem' } }}
+          >
             🎨 Art Showcase Feed
           </Typography>
-        </Box>
+        </Box> */}
 
-        {/* Category + Search Filters */}
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 4 }}>
-          <TextField
-            select
-            label="Category"
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            sx={{ minWidth: 200 }}
-          >
-            {categories.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </TextField>
-
-          <TextField
-            label="Search posts"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            InputProps={{ endAdornment: <SearchIcon sx={{ color: 'gray' }} /> }}
-            sx={{ flexGrow: 1, minWidth: 200 }}
-          />
-           {user && (
-          <Fab
-            color="primary"
-            onClick={handleDialogOpen}
+        <Box sx={{ display: 'flex', gap: 5 }}>
+          {/* Sidebar (Desktop Only) */}
+          <Paper
+            elevation={2}
             sx={{
-              boxShadow: 3,
+              display: { xs: 'none', md: 'flex' },
+              flexDirection: 'column',
+              width: 250,
+              p: 2,
+              backgroundColor: '#fff',
+              gap: 2,
+              height: 'calc(100vh - 160px)',
+              position: 'sticky',
+              top: 100,
+              borderRadius: 2,
             }}
           >
-            <AddIcon />
-          </Fab>
-        )}
-        </Box>
+            <TextField
+              fullWidth
+              label="Search posts"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              InputProps={{ endAdornment: <SearchIcon sx={{ color: 'gray' }} /> }}
+            />
+            <Typography variant="subtitle1" fontWeight="bold" sx={{ mt: 1 }}>
+              Categories
+            </Typography>
+            <List disablePadding>
+              {categories.map((option) => (
+                <ListItemButton
+                  key={option.value}
+                  selected={selectedCategory === option.value}
+                  onClick={() => setSelectedCategory(option.value)}
+                >
+                  <ListItemText primary={option.label} />
+                </ListItemButton>
+              ))}
+            </List>
 
-        {/* Posts Grid */}
-        <Box
-          sx={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 3,
-            justifyContent: 'center',
-          }}
-        >
-          {filteredPosts.map((post) => (
-            <Box key={post._id} sx={{ flex: '1 1 calc(50% - 24px)', minWidth: 300 }}>
-              <PostCard post={post} onUpdate={handlePostUpdate} />
+            {user && (
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={handleDialogOpen}
+                sx={{ mt: 2 }}
+              >
+                Create Post
+              </Button>
+            )}
+          </Paper>
+
+          {/* Main Content */}
+          <Box sx={{ flex: 1 }}>
+            {/* Mobile Filters */}
+            <Box
+              sx={{
+                display: { xs: 'flex', md: 'none' },
+                flexDirection: 'column',
+                gap: 2,
+                mb: 3,
+              }}
+            >
+              <TextField
+                select
+                label="Category"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                fullWidth
+              >
+                {categories.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                label="Search posts"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                InputProps={{ endAdornment: <SearchIcon sx={{ color: 'gray' }} /> }}
+                fullWidth
+              />
+              {user && (
+                <Button variant="contained" fullWidth onClick={handleDialogOpen}>
+                  Create Post
+                </Button>
+              )}
             </Box>
-          ))}
-        </Box>
 
-        {/* Floating Create Post Button */}
-       
+            {/* Post List (1 per row) */}
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 3,
+              }}
+            >
+              {filteredPosts.map((post) => (
+                <PostCard key={post._id} post={post} onUpdate={handlePostUpdate} />
+              ))}
+            </Box>
+          </Box>
+        </Box>
 
         {/* Create Post Dialog */}
         <Dialog open={openDialog} onClose={handleDialogClose} maxWidth="sm" fullWidth>

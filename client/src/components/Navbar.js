@@ -75,7 +75,16 @@ function Navbar() {
         <ListItem button component={Link} to="/">
           <ListItemText primary="Home" />
         </ListItem>
-        {user ? (
+        {!user ? (
+          <>
+            <ListItem button component={Link} to="/login">
+              <ListItemText primary="Login" />
+            </ListItem>
+            <ListItem button component={Link} to="/register">
+              <ListItemText primary="Register" />
+            </ListItem>
+          </>
+        ) : (
           <>
             {user.role === 'user' && (
               <ListItem button component={Link} to="/top-ranked">
@@ -95,20 +104,11 @@ function Navbar() {
             <ListItem button component={Link} to="/messenger">
               <ListItemText primary="Messages" />
             </ListItem>
-            <ListItem button component={Link} to={`/profile/${user.id}`}>
+            <ListItem button component={Link} to={`/profile/${user?.id}`}>
               <ListItemText primary="Profile" />
             </ListItem>
             <ListItem button onClick={handleLogout}>
               <ListItemText primary="Logout" />
-            </ListItem>
-          </>
-        ) : (
-          <>
-            <ListItem button component={Link} to="/login">
-              <ListItemText primary="Login" />
-            </ListItem>
-            <ListItem button component={Link} to="/register">
-              <ListItemText primary="Register" />
             </ListItem>
           </>
         )}
@@ -142,38 +142,17 @@ function Navbar() {
           </Typography>
 
           {isMobile ? (
-            <>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                {user && (
-                  <>
-                    <IconButton color="inherit" component={Link} to="/notifications">
-                      <Badge badgeContent={notifications.filter((n) => !n.read).length} color="secondary">
-                        <NotificationsIcon />
-                      </Badge>
-                    </IconButton>
-
-                    <IconButton onClick={handleMenuOpen} color="inherit">
-                      <Avatar sx={{ width: 32, height: 32 }} src={user.username.charAt(0)} />
-                    </IconButton>
-
-                    <IconButton onClick={toggleDrawer(true)} color="inherit">
-                      <MenuIcon />
-                    </IconButton>
-                  </>
-                )}
-              </Box>
-
-              <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
-                <MenuItem component={Link} to={`/profile/${user.id}`} onClick={handleMenuClose}>
-                  Profile
-                </MenuItem>
-                <MenuItem component={Link} to="/messenger" onClick={handleMenuClose}>
-                  Messages
-                </MenuItem>
-                <MenuItem onClick={() => { handleLogout(); handleMenuClose(); }}>
-                  Logout
-                </MenuItem>
-              </Menu>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {user ? ( <>
+                <IconButton color="inherit" component={Link} to="/notifications">
+                    <Badge badgeContent={notifications.filter((n) => !n.read).length} color="secondary">
+                      <NotificationsIcon />
+                    </Badge>
+                  </IconButton>
+              </>) : (<></>) }
+              <IconButton onClick={toggleDrawer(true)} color="inherit">
+                <MenuIcon />
+              </IconButton>
 
               <Drawer
                 anchor="right"
@@ -183,48 +162,51 @@ function Navbar() {
               >
                 {drawerLinks}
               </Drawer>
-            </>
+            </Box>
           ) : (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              {user && user.role === 'user' && (
-                <Button color="inherit" component={Link} to="/top-ranked">
-                  Rankings
-                </Button>
-              )}
-              {user && user.role === 'admin' && (
-                <Button color="inherit" component={Link} to="/admin">
-                  Admin
-                </Button>
-              )}
-              {user && user.role === 'judge' && (
-                <Button color="inherit" component={Link} to="/judge">
-                  Judge
-                </Button>
-              )}
-
-              <IconButton color="inherit" component={Link} to="/notifications">
-                <Badge badgeContent={notifications.filter((n) => !n.read).length} color="secondary">
-                  <NotificationsIcon />
-                </Badge>
-              </IconButton>
-
-              {user && (
+              {!user ? (
                 <>
+                  <Button color="inherit" component={Link} to="/login">
+                    Login
+                  </Button>
+                  <Button color="inherit" component={Link} to="/register">
+                    Register
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {user && user.role === 'user' && (
+                    <Button color="inherit" component={Link} to="/top-ranked">
+                      Rankings
+                    </Button>
+                  )}
+                  {user && user.role === 'admin' && (
+                    <Button color="inherit" component={Link} to="/admin">
+                      Admin
+                    </Button>
+                  )}
+                  {user && user.role === 'judge' && (
+                    <Button color="inherit" component={Link} to="/judge">
+                      Judge
+                    </Button>
+                  )}
+                  <IconButton color="inherit" component={Link} to="/notifications">
+                    <Badge badgeContent={notifications.filter((n) => !n.read).length} color="secondary">
+                      <NotificationsIcon />
+                    </Badge>
+                  </IconButton>
+
                   <Button
                     color="inherit"
-                    startIcon={
-                      <Avatar
-                        sx={{ width: 24, height: 24 }}
-                        src={avatarSrc}
-                      />
-                    }
+                    startIcon={<Avatar sx={{ width: 24, height: 24 }} src={avatarSrc} />}
                     onClick={handleMenuOpen}
                   >
                     {user.username}
                   </Button>
 
                   <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
-                    <MenuItem component={Link} to={`/profile/${user.id}`} onClick={handleMenuClose}>
+                    <MenuItem component={Link} to={`/profile/${user?.id}`} onClick={handleMenuClose}>
                       Profile
                     </MenuItem>
                     <MenuItem component={Link} to="/messenger" onClick={handleMenuClose}>
@@ -234,17 +216,6 @@ function Navbar() {
                       Logout
                     </MenuItem>
                   </Menu>
-                </>
-              )}
-
-              {!user && (
-                <>
-                  <Button color="inherit" component={Link} to="/login">
-                    Login
-                  </Button>
-                  <Button color="inherit" component={Link} to="/register">
-                    Register
-                  </Button>
                 </>
               )}
             </Box>
