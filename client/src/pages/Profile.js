@@ -169,11 +169,23 @@ function Profile() {
                   sx={{ mb: 2 }}
                 />
                 <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setAvatar(e.target.files[0])}
-                  style={{ marginBottom: '16px' }}
-                />
+  type="file"
+  accept="image/*"
+  onChange={(e) => setAvatar(e.target.files[0])}
+  style={{
+    marginBottom: '16px',
+    padding: '10px',
+    border: '2px solid #ddd',
+    borderRadius: '4px',
+    backgroundColor: '#f9f9f9',
+    fontSize: '16px',
+    cursor: 'pointer',
+    display: 'block',
+    width: '100%',
+    boxSizing: 'border-box',
+  }}
+/>
+
                 <Button type="submit" variant="contained" fullWidth>
                   Update Profile
                 </Button>

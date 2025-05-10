@@ -65,7 +65,18 @@ function PostForm({ onPostCreated }) {
         type="file"
         accept="image/*,audio/*"
         onChange={(e) => setFile(e.target.files[0])}
-        style={{ marginBottom: '16px' }}
+        style={{
+    marginBottom: '16px',
+    padding: '10px',
+    border: '2px solid #ddd',
+    borderRadius: '4px',
+    backgroundColor: '#f9f9f9',
+    fontSize: '16px',
+    cursor: 'pointer',
+    display: 'block',
+    width: '100%',
+    boxSizing: 'border-box',
+  }}
       />
       <Button type="submit" variant="contained" fullWidth>
         Create Post
