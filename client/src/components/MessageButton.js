@@ -14,7 +14,7 @@ function MessageButton({ onNewConversation }) {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [message, setMessage] = useState('');
-  const { user } = useContext(AuthContext);
+  const { user } = useContext(AuthContext); // Ensure user is accessed correctly
   const navigate = useNavigate();
 
   const handleOpen = () => setOpenUserList(true);
@@ -25,16 +25,17 @@ function MessageButton({ onNewConversation }) {
     setSelectedUser(null);
   };
 
+  // Fetch the list of users (excluding the current logged-in user)
   useEffect(() => {
-    if (openUserList) {
+    if (openUserList && user) { // Only fetch users if the `user` exists
       api.get('/api/users')
         .then(res => {
-          const filtered = res.data.filter(u => u._id !== user.id);
+          const filtered = res.data.filter(u => u._id !== user.id); // Ensure user.id exists
           setUsers(filtered);
         })
         .catch(err => console.error('Error fetching users:', err));
     }
-  }, [openUserList, user.id]);
+  }, [openUserList, user]);
 
   const handleUserSelect = (user) => {
     setSelectedUser(user);
@@ -64,6 +65,11 @@ function MessageButton({ onNewConversation }) {
       console.error('Error starting conversation or sending message:', err);
     }
   };
+
+  // Check if `user` is available before rendering buttons/dialogs
+  if (!user) {
+    return null; // or show a loading spinner/message
+  }
 
   return (
     <>

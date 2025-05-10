@@ -227,7 +227,9 @@ function Profile() {
               filteredPosts.map((post) => (
                 <Box key={post._id} sx={{ mb: 2 }}>
                   <Link to={`/post/${post._id}`} style={{ textDecoration: 'none' }}>
-                    <PostCard post={post} />
+                    <Box>
+                      <PostCard post={post} />
+                    </Box>
                   </Link>
                 </Box>
               ))
