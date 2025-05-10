@@ -8,13 +8,23 @@ import {
   Button,
   MenuItem,
   Box,
+  Paper,
+  InputAdornment,
+  useMediaQuery,
+  Link,
 } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import { useTheme } from '@mui/material/styles';
 
 function JudgeDashboard() {
   const [posts, setPosts] = useState([]);
   const [category, setCategory] = useState('literal');
   const [evaluations, setEvaluations] = useState({});
   const [evaluatedPosts, setEvaluatedPosts] = useState(new Set());
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all'); // Filter for Evaluated/Un-Evaluated
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     const fetchData = async () => {
@@ -92,78 +102,250 @@ function JudgeDashboard() {
     }
   };
 
+  const filteredPosts = posts.filter((post) => {
+    const matchesCategory = !category || post.category === category;
+    const matchesSearch = !searchTerm || post.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      filterStatus === 'all' ||
+      (filterStatus === 'evaluated' && evaluatedPosts.has(post._id)) ||
+      (filterStatus === 'unevaluated' && !evaluatedPosts.has(post._id));
+
+    return matchesCategory && matchesSearch && matchesStatus;
+  });
+
   return (
-    <Container sx={{ py: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Judge Dashboard
-      </Typography>
+    <Box sx={{ display: 'flex' }}>
+      {/* Sidebar for desktop */}
+      {!isMobile && (
+        <Paper
+          elevation={3}
+          sx={{
+            width: 250,
+            height: '100vh',
+            position: 'fixed',
+            top: 65,
+            left: 0,
+            bgcolor: '#fff',
+            px: 2,
+            py: 3,
+            borderRight: '1px solid #ddd',
+          }}
+        >
+          <TextField
+            placeholder="Search posts"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            fullWidth
+            size="small"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ mb: 3 }}
+          />
 
-      <TextField
-        select
-        label="Category"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-        fullWidth
-        sx={{ mb: 4 }}
-      >
-        <MenuItem value="literal">Literal Art</MenuItem>
-        <MenuItem value="visual">Visual Art</MenuItem>
-        <MenuItem value="vocal">Vocal Art</MenuItem>
-      </TextField>
+          <Typography variant="h6" gutterBottom>Categories</Typography>
+          <MenuItem
+            value="literal"
+            onClick={() => setCategory('literal')}
+            sx={{
+              backgroundColor: category === 'literal' ? theme.palette.primary.main : 'transparent',
+              color: category === 'literal' ? '#fff' : 'inherit',
+            }}
+          >
+            Literal
+          </MenuItem>
+          <MenuItem
+            value="visual"
+            onClick={() => setCategory('visual')}
+            sx={{
+              backgroundColor: category === 'visual' ? theme.palette.primary.main : 'transparent',
+              color: category === 'visual' ? '#fff' : 'inherit',
+            }}
+          >
+            Visual
+          </MenuItem>
+          <MenuItem
+            value="vocal"
+            onClick={() => setCategory('vocal')}
+            sx={{
+              backgroundColor: category === 'vocal' ? theme.palette.primary.main : 'transparent',
+              color: category === 'vocal' ? '#fff' : 'inherit',
+            }}
+          >
+            Vocal
+          </MenuItem>
 
-      {posts.map(post => {
-        const postId = post._id;
-        const isOpen = evaluations[postId]?.isOpen || false;
-        const score = evaluations[postId]?.score || '';
-        const feedback = evaluations[postId]?.feedback || '';
-        const isEvaluated = evaluatedPosts.has(postId);
+          <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
+            Status
+          </Typography>
+          <Link
+            onClick={() => setFilterStatus('all')}
+            sx={{
+              fontFamily : "sans-serif",
+              display: 'block',
+              padding: '8px',
+              textDecoration: 'none',
+              backgroundColor: filterStatus === 'all' ? theme.palette.primary.main : 'transparent',
+              color: filterStatus === 'all' ? '#fff' : 'inherit',
+              mb: 1,
+              cursor: 'pointer', // Add pointer cursor
+            }}
+          >
+            All
+          </Link>
+          <Link
+            onClick={() => setFilterStatus('evaluated')}
+            sx={{
+              fontFamily : "sans-serif",
+              display: 'block',
+              padding: '8px',
+              textDecoration: 'none',
+              backgroundColor: filterStatus === 'evaluated' ? theme.palette.primary.main : 'transparent',
+              color: filterStatus === 'evaluated' ? '#fff' : 'inherit',
+              mb: 1,
+              cursor: 'pointer', // Add pointer cursor
+            }}
+          >
+            Evaluated
+          </Link>
+          <Link
+            onClick={() => setFilterStatus('unevaluated')}
+            sx={{
+              fontFamily : "sans-serif",
+              display: 'block',
+              padding: '8px',
+              textDecoration: 'none',
+              backgroundColor: filterStatus === 'unevaluated' ? theme.palette.primary.main : 'transparent',
+              color: filterStatus === 'unevaluated' ? '#fff' : 'inherit',
+              cursor: 'pointer', // Add pointer cursor
+            }}
+          >
+            Un-Evaluated
+          </Link>
+        </Paper>
+      )}
 
-        return (
-          <Box key={postId} sx={{ mb: 4 }}>
-            <PostCard post={post} showActions={false} />
-            <Button
-              variant="contained"
-              onClick={() => toggleEvaluationForm(postId)}
-              sx={{ mt: 1 }}
-              disabled={isEvaluated}
+      {/* Main content */}
+      <Container sx={{ ml: isMobile ? 0 : '270px', py: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          Judge Dashboard
+        </Typography>
+
+        {/* Mobile filters */}
+        {isMobile && (
+          <>
+            <TextField
+              select
+              label="Select Category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              fullWidth
+              sx={{ mb: 2 }}
             >
-              {isEvaluated ? 'Evaluated' : isOpen ? 'Cancel Evaluation' : 'Evaluate'}
-            </Button>
+              <MenuItem value="literal">Literal</MenuItem>
+              <MenuItem value="visual">Visual</MenuItem>
+              <MenuItem value="vocal">Vocal</MenuItem>
+            </TextField>
 
-            {isOpen && !isEvaluated && (
-              <Box
-                component="form"
-                onSubmit={(e) => handleSubmit(e, postId)}
-                sx={{ mt: 2 }}
-              >
-                <TextField
-                  label="Score (1–10)"
-                  type="number"
-                  value={score}
-                  onChange={(e) => handleFieldChange(postId, 'score', e.target.value)}
-                  fullWidth
-                  required
-                  inputProps={{ min: 1, max: 10 }}
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  label="Feedback"
-                  value={feedback}
-                  onChange={(e) => handleFieldChange(postId, 'feedback', e.target.value)}
-                  fullWidth
-                  multiline
-                  rows={4}
-                  sx={{ mb: 2 }}
-                />
-                <Button type="submit" variant="contained">
-                  Submit Evaluation
+            <TextField
+              select
+              label="Select Status"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              fullWidth
+              sx={{ mb: 3 }}
+            >
+              <MenuItem value="all">All</MenuItem>
+              <MenuItem value="evaluated">Evaluated</MenuItem>
+              <MenuItem value="unevaluated">Un-Evaluated</MenuItem>
+            </TextField>
+
+            <TextField
+              placeholder="Search posts"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              fullWidth
+              size="small"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ mb: 3 }}
+            />
+          </>
+        )}
+
+        {/* Posts */}
+        {filteredPosts.map(post => {
+          const postId = post._id;
+          const isOpen = evaluations[postId]?.isOpen || false;
+          const score = evaluations[postId]?.score || '';
+          const feedback = evaluations[postId]?.feedback || '';
+          const isEvaluated = evaluatedPosts.has(postId);
+
+          return (
+            <Box
+              key={postId}
+              sx={{
+                mb: 4,
+                backgroundColor: isEvaluated ? '#f0f0f0' : 'transparent', // Gray out evaluated posts
+                cursor: isEvaluated ? 'not-allowed' : 'pointer', // Disable pointer on evaluated posts
+                opacity: isEvaluated ? 0.6 : 1, // Make evaluated posts a bit transparent
+              }}
+            >
+              <PostCard post={post} showActions={false} />
+              {!isEvaluated && (
+                <Button
+                  variant="contained"
+                  onClick={() => toggleEvaluationForm(postId)}
+                  sx={{ mt: 1 }}
+                >
+                  {isOpen ? 'Cancel Evaluation' : 'Evaluate'}
                 </Button>
-              </Box>
-            )}
-          </Box>
-        );
-      })}
-    </Container>
+              )}
+
+              {isOpen && !isEvaluated && (
+                <Box
+                  component="form"
+                  onSubmit={(e) => handleSubmit(e, postId)}
+                  sx={{ mt: 2 }}
+                >
+                  <TextField
+                    label="Score (1–10)"
+                    type="number"
+                    value={score}
+                    onChange={(e) => handleFieldChange(postId, 'score', e.target.value)}
+                    fullWidth
+                    required
+                    inputProps={{ min: 1, max: 10 }}
+                    sx={{ mb: 2 }}
+                  />
+                  <TextField
+                    label="Feedback"
+                    value={feedback}
+                    onChange={(e) => handleFieldChange(postId, 'feedback', e.target.value)}
+                    fullWidth
+                    multiline
+                    rows={4}
+                    sx={{ mb: 2 }}
+                  />
+                  <Button type="submit" variant="contained">
+                    Submit Evaluation
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          );
+        })}
+      </Container>
+    </Box>
   );
 }
 
