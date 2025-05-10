@@ -75,7 +75,7 @@ function Home() {
   const handleDialogClose = () => setOpenDialog(false);
 
   if (user?.role === 'admin') return <Navigate to="/admin" replace />;
-  if (user?.role === 'judge') return <Navigate to="/judge" replace />;
+  if (user?.role === 'literal_judge' || user?.role === 'visual_judge' || user?.role === 'vocal_judge') return <Navigate to="/judge" replace />;
 
   return (
     <Box sx={{ minHeight: '100vh', py: 4 }}>
