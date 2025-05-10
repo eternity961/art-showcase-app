@@ -3,18 +3,39 @@ import { useParams, Link } from 'react-router-dom';
 import api from '../utils/api';
 import { AuthContext } from '../contexts/AuthContext';
 import PostCard from '../components/PostCard';
-import { Container, Typography, TextField, Button, Avatar, Box } from '@mui/material';
+import {
+  Container,
+  Typography,
+  TextField,
+  Button,
+  Avatar,
+  Box,
+  Card,
+  CardContent,
+  Paper,
+  useMediaQuery,
+  InputAdornment,
+  MenuItem,
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import SearchIcon from '@mui/icons-material/Search';
+
+const categoryOptions = ['visual', 'vocal', 'literal'];
 
 function Profile() {
   const { user } = useContext(AuthContext);
-  const { id } = useParams(); // Get user ID from URL params
+  const { id } = useParams();
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
   const [avatar, setAvatar] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
 
-  // Fetch profile and posts
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -22,21 +43,18 @@ function Profile() {
         setProfile(response.data);
         setUsername(response.data.username);
         setBio(response.data.profile.bio);
-  
-        // ✅ Now this will work
+
         const postsResponse = await api.get(`/api/posts/user/${id || user.id}`);
         setPosts(postsResponse.data);
       } catch (err) {
         console.error('Error fetching profile or posts:', err);
-        setPosts([]); // fallback
+        setPosts([]);
       }
     };
-  
+
     fetchProfile();
   }, [id, user]);
-  
 
-  // Handle profile update
   const handleUpdate = async (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -56,74 +74,168 @@ function Profile() {
 
   if (!profile) return null;
 
+  const filteredPosts = posts.filter((post) => {
+    const matchesCategory = !selectedCategory || post.category === selectedCategory;
+    const matchesSearch = !searchTerm || post.title.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
   return (
-    <Container sx={{ py: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        {profile.username}'s Profile
-      </Typography>
-      
-      {/* Profile Avatar */}
-      <Avatar
-        src={profile.profile.avatar ? `${process.env.REACT_APP_API_URL}/${profile.profile.avatar}` : '/assets/default-avatar.png'}
-        sx={{ width: 100, height: 100, mb: 2 }}
-      />
-      
-      {/* Profile Bio */}
-      <Typography variant="body1">{profile.profile.bio}</Typography>
-      
-      {/* Update Profile Form for the logged-in user */}
-      {user && user.id === profile._id && (
-        <Box component="form" onSubmit={handleUpdate} sx={{ mt: 4 }}>
+    <Box sx={{ display: 'flex' }}>
+      {/* Sidebar for desktop */}
+      {!isMobile && (
+        <Paper
+          elevation={3}
+          sx={{
+            width: 250,
+            height: '100vh',
+            position: 'fixed',
+            top: 65,
+            left: 0,
+            bgcolor: '#fff',
+            px: 2,
+            py: 3,
+            borderRight: '1px solid #ddd',
+          }}
+        >
           <TextField
-            label="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Search posts"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             fullWidth
-            sx={{ mb: 2 }}
+            size="small"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ mb: 3 }}
           />
-          <TextField
-            label="Bio"
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            fullWidth
-            multiline
-            rows={4}
-            sx={{ mb: 2 }}
-          />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setAvatar(e.target.files[0])}
-            style={{ marginBottom: '16px' }}
-          />
-          <Button type="submit" variant="contained" fullWidth>
-            Update Profile
-          </Button>
-        </Box>
+
+          <Typography variant="h6" gutterBottom>Categories</Typography>
+          {categoryOptions.map((cat) => (
+            <Button
+              key={cat}
+              fullWidth
+              variant={selectedCategory === cat ? 'contained' : 'text'}
+              onClick={() => setSelectedCategory(cat)}
+              sx={{ justifyContent: 'flex-start', mb: 1, textTransform: 'capitalize' }}
+            >
+              {cat}
+            </Button>
+          ))}
+        </Paper>
       )}
 
-      {/* Display List of Posts */}
-      {/* Display List of Posts only if user role is "user" */}
-{profile.role === 'user' && (
-  <Box sx={{ mt: 4 }}>
-    <Typography variant="h5" gutterBottom>
-      {profile.username}'s Posts
-    </Typography>
-    {posts.length === 0 ? (
-      <Typography>No posts yet.</Typography>
-    ) : (
-      posts.map((post) => (
-        <Box key={post._id} sx={{ mb: 2 }}>
-          <Link to={`/post/${post._id}`} style={{ textDecoration: 'none' }}>
-            <PostCard post={post} />
-          </Link>
+      {/* Main content */}
+      <Container sx={{ ml: isMobile ? 0 : '270px', py: 4 }}>
+        {/* Profile Header */}
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 4, gap: 3 }}>
+          <Avatar
+            src={
+              profile.profile.avatar
+                ? `${process.env.REACT_APP_API_URL}/${profile.profile.avatar}`
+                : '/assets/default-avatar.png'
+            }
+            sx={{ width: 80, height: 80, border: '5px solid #ddd' }}
+          />
+          <Box>
+            <Typography variant="h5" textTransform="uppercase">{profile.username}</Typography>
+            <Typography variant="body1" color="gray">{profile.profile.bio}</Typography>
+          </Box>
         </Box>
-      ))
-    )}
-  </Box>
-)}
 
-    </Container>
+        {/* Update Profile Form (only for self) */}
+        {user && user.id === profile._id && (
+          <Card sx={{ mb: 4 }}>
+            <CardContent>
+              <Box component="form" onSubmit={handleUpdate}>
+                <TextField
+                  label="Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  fullWidth
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  label="Bio"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  fullWidth
+                  multiline
+                  rows={4}
+                  sx={{ mb: 2 }}
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setAvatar(e.target.files[0])}
+                  style={{ marginBottom: '16px' }}
+                />
+                <Button type="submit" variant="contained" fullWidth>
+                  Update Profile
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Mobile filters */}
+        {isMobile && (
+          <>
+            <TextField
+              select
+              label="Select Category"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              fullWidth
+              sx={{ mb: 2 }}
+            >
+              <MenuItem value="">All</MenuItem>
+              {categoryOptions.map((cat) => (
+                <MenuItem key={cat} value={cat}>
+                  {cat}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              placeholder="Search posts"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              fullWidth
+              size="small"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ mb: 3 }}
+            />
+          </>
+        )}
+
+        {/* Posts */}
+        {profile.role === 'user' && (
+          <Box>
+            {filteredPosts.length === 0 ? (
+              <Typography>No posts found.</Typography>
+            ) : (
+              filteredPosts.map((post) => (
+                <Box key={post._id} sx={{ mb: 2 }}>
+                  <Link to={`/post/${post._id}`} style={{ textDecoration: 'none' }}>
+                    <PostCard post={post} />
+                  </Link>
+                </Box>
+              ))
+            )}
+          </Box>
+        )}
+      </Container>
+    </Box>
   );
 }
 
