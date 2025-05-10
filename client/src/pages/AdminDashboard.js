@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../utils/api';
-import { Container, Typography, Table, TableBody, TableCell, TableHead, TableRow, Button, Box, useMediaQuery, IconButton } from '@mui/material';
-import { Block, PersonAdd } from '@mui/icons-material';
+import { Container, Typography, Table, TableBody, TableCell, TableHead, TableRow, Button, Box } from '@mui/material';
 
 function AdminDashboard() {
   const [users, setUsers] = useState([]);
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down('sm')); // Detect if it's a mobile device
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -37,14 +35,7 @@ function AdminDashboard() {
     }
   };
 
-  const handleAssignJudge = async (id) => {
-    try {
-      await api.post(`/api/admin/assign-judge/${id}`);
-      setUsers(users.map(u => u._id === id ? { ...u, role: 'judge' } : u));
-    } catch (err) {
-      console.error('Error assigning judge:', err);
-    }
-  };
+  
 
   return (
     <Container sx={{ py: 4 }}>
@@ -72,24 +63,7 @@ function AdminDashboard() {
                 <TableCell>{user.isBanned ? 'Banned' : 'Active'}</TableCell>
                 <TableCell>
                   {/* Mobile Icons */}
-                  {isMobile ? (
-                    <>
-                      {user.isBanned ? (
-                        <IconButton onClick={() => handleUnban(user._id)} color="success">
-                          <Block />
-                        </IconButton>
-                      ) : (
-                        <IconButton onClick={() => handleBan(user._id)} color="error">
-                          <Block />
-                        </IconButton>
-                      )}
-                      {user.role !== 'judge' && user.role !== 'admin' && (
-                        <IconButton onClick={() => handleAssignJudge(user._id)} color="primary">
-                          <PersonAdd />
-                        </IconButton>
-                      )}
-                    </>
-                  ) : (
+                  { (
                     // Desktop Buttons
                     <>
                       {user.isBanned ? (
@@ -101,11 +75,7 @@ function AdminDashboard() {
                           Ban
                         </Button>
                       )}
-                      {user.role !== 'judge' && user.role !== 'admin' && (
-                        <Button onClick={() => handleAssignJudge(user._id)} color="primary">
-                          Make Judge
-                        </Button>
-                      )}
+                    
                     </>
                   )}
                 </TableCell>
