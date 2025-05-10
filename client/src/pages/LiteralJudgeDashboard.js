@@ -26,31 +26,40 @@ function LiteralJudgeDashboard() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [postRes, evalRes] = await Promise.all([
-          api.get('/api/judge/top-posts?category=literal'),
-          api.get('/api/judge/evaluations'),
-        ]);
+  const fetchData = async () => {
+    try {
+      const [postRes, evalRes] = await Promise.all([
+        api.get('/api/judge/top-posts?category=literal'),
+        api.get('/api/judge/evaluations'),
+      ]);
 
-        const topPosts = postRes.data;
-        setPosts(topPosts);
-        setEvaluations({});
+      const topPosts = postRes.data;
+      setPosts(topPosts);
 
-        const evaluatedSet = new Set(
-          evalRes.data
-            .filter(ev => topPosts.some(p => p._id === ev.post._id))
-            .map(ev => ev.post._id)
-        );
+      const evaluatedSet = new Set();
+      const evaluationMap = {};
 
-        setEvaluatedPosts(evaluatedSet);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-      }
-    };
+      evalRes.data.forEach(ev => {
+        if (topPosts.some(p => p._id === ev.post._id)) {
+          const postId = ev.post._id;
+          evaluatedSet.add(postId);
+          evaluationMap[postId] = {
+            score: ev.score,
+            feedback: ev.feedback,
+          };
+        }
+      });
 
-    fetchData();
-  }, []);
+      setEvaluatedPosts(evaluatedSet);
+      setEvaluations(evaluationMap);
+    } catch (err) {
+      console.error('Error fetching data:', err);
+    }
+  };
+
+  fetchData();
+}, []);
+
 
   const handleFieldChange = (postId, field, value) => {
     setEvaluations(prev => ({
@@ -252,7 +261,18 @@ function LiteralJudgeDashboard() {
                 opacity: isEvaluated ? 0.6 : 1,
               }}
             >
-              <PostCard post={post} showActions={false} />
+              <PostCard
+  post={post}
+  showActions={false}
+  evaluation={
+    isEvaluated
+      ? {
+          score: post.judgeScore || evaluations[post._id]?.score,
+        }
+      : null
+  }
+/>
+
               {!isEvaluated && (
                 <Button
                   variant="contained"
