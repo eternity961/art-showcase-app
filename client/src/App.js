@@ -19,6 +19,7 @@ import TopRankedPost from './pages/TopRankedPost';
 import ChangePassword from './pages/ChangePassword';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import VerifyOtp from './pages/VerifyOtp';
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
           {/* Public routes (no layout) */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify-otp" element={<VerifyOtp />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Routes>

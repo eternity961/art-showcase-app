@@ -21,15 +21,19 @@ function Register() {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    try {
-      await api.post('/api/auth/register', { username, email, password });
-      navigate('/login');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Error registering');
-    }
-  };
+  e.preventDefault();
+  try {
+    const res = await api.post('/api/auth/register', { username, email, password });
+    
+    // Store the token for OTP verification
+    localStorage.setItem('token', res.data.token);
+    
+    // Redirect to OTP verification page
+    navigate('/verify-otp');
+  } catch (err) {
+    console.error('Error registering:', err);
+  }
+};
 
   return (
     <Box
