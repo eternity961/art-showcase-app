@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
-
+import { Link as RouterLink } from 'react-router-dom';
 const categoryOptions = ['visual', 'vocal', 'literal'];
 
 function Profile() {
@@ -188,6 +188,19 @@ function Profile() {
                 <Button type="submit" variant="contained" fullWidth>
                   Update Profile
                 </Button>
+
+                <Box sx={{ py: 4, textAlign: 'center' }}>
+  <Typography>
+    Do you want to change your password?{' '}
+    <Link
+      component={RouterLink}
+      to="/change-password"
+      sx={{ textDecoration: 'none', color: 'primary.main' }} // Customize as needed
+    >
+      Click Here
+    </Link>
+  </Typography>
+  </Box>
               </Box>
             </CardContent>
           </Card>

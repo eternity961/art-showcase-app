@@ -16,6 +16,7 @@ import Notifications from './pages/Notifications';
 import AdminDashboard from './pages/AdminDashboard';
 import JudgeDashboard from './pages/JudgeDashboard';
 import TopRankedPost from './pages/TopRankedPost';
+import ChangePassword from './pages/ChangePassword';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
             <Route path="judge" element={<JudgeDashboard />} />
             <Route path="/rankings" element={<RankPage />} />
             <Route path="/top-ranked" element={<TopRankedPost />} />
+            <Route path="/change-password" element={<ChangePassword />} />
           </Route>
 
           {/* Public routes (no layout) */}
