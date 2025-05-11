@@ -182,3 +182,41 @@ exports.verifyOtp = async (req, res) => {
   }
 };
 
+exports.resendOtp = async (req, res) => {
+  const userId = req.user?.id;
+
+  try {
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (user.isVerified) return res.status(400).json({ message: 'User already verified' });
+
+    // Check if OTP is expired or doesn't exist
+    if (!user.otp || user.otpExpires < Date.now()) {
+      // Generate a new OTP if expired or doesn't exist
+      const otp = Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
+      user.otp = otp;
+      user.otpExpires = Date.now() + 3600000; // OTP expires in 1 hour
+
+      // Save user with new OTP
+      await user.save();
+
+      // Send OTP to user's email
+      await sendEmail({
+        to: user.email,
+        subject: 'Resend OTP for Account Verification',
+        html: `
+          <p>Hello ${user.username},</p>
+          <p>Your new OTP for account verification is:</p>
+          <h2>${otp}</h2>
+          <p>This OTP will expire in 1 hour.</p>
+        `
+      });
+    }
+
+    res.json({ message: 'OTP resent successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error resending OTP', error: err.message });
+  }
+};
