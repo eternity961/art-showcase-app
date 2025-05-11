@@ -74,7 +74,7 @@ exports.forgotPassword = async (req, res) => {
     user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
     await user.save();
 
-    const resetLink = `http://yourfrontend.com/reset-password/${token}`;
+    const resetLink = `http://localhost:3000/reset-password/${token}`;
 
     await sendEmail({
       to: user.email,
@@ -122,9 +122,7 @@ exports.resetPassword = async (req, res) => {
 exports.changePassword = async (req, res) => {
 
   try {
-    console.log('Decoded req.user:', req.user);
     const userId = req.user?.id; // from auth middleware
-    console.log('User ID from token:', userId);
     if (!userId) return res.status(400).json({ message: 'Invalid user ID from token' });
 
     const { currentPassword, newPassword } = req.body;
