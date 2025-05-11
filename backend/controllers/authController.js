@@ -36,7 +36,9 @@ exports.register = async (req, res) => {
       `
     });
 
-    res.status(201).json({ message: 'User registered. OTP sent to email.' });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '10m' });
+
+    res.status(201).json({ message: 'User registered. OTP sent to email.',token });
   } catch (err) {
     res.status(400).json({ message: 'Error registering user', error: err.message });
   }
@@ -147,3 +149,36 @@ exports.changePassword = async (req, res) => {
     res.status(500).json({ message: 'Error changing password', error: err.message });
   }
 };
+
+exports.verifyOtp = async (req, res) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  const { otp } = req.body;
+
+  if (!token) return res.status(401).json({ message: 'No token provided' });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (user.isVerified) return res.status(400).json({ message: 'User already verified' });
+
+    if (
+      user.otp !== otp ||
+      !user.otpExpires ||
+      user.otpExpires < Date.now()
+    ) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+
+    user.isVerified = true;
+    user.otp = undefined;
+    user.otpExpires = undefined;
+    await user.save();
+
+    res.json({ message: 'Account verified successfully' });
+  } catch (err) {
+    res.status(401).json({ message: 'Invalid or expired token', error: err.message });
+  }
+};
+
