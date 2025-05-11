@@ -7,10 +7,36 @@ const sendEmail = require('../utils/sendEmail')
 exports.register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) return res.status(400).json({ message: 'Email already in use' });
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ username, email, password: hashedPassword });
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    const otpExpires = Date.now() + 10 * 60 * 1000; // 10 mins
+
+    const user = new User({
+      username,
+      email,
+      password: hashedPassword,
+      otp,
+      otpExpires,
+      isVerified: false,
+    });
+
     await user.save();
-    res.status(201).json({ message: 'User registered successfully' });
+
+    await sendEmail({
+      to: user.email,
+      subject: 'Verify Your Account',
+      html: `
+        <p>Hello ${user.username},</p>
+        <p>Your verification OTP is: <b>${otp}</b></p>
+        <p>This code will expire in 10 minutes.</p>
+      `
+    });
+
+    res.status(201).json({ message: 'User registered. OTP sent to email.' });
   } catch (err) {
     res.status(400).json({ message: 'Error registering user', error: err.message });
   }
