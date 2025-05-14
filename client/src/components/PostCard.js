@@ -62,13 +62,36 @@ function PostCard({ post, onUpdate, showActions = true, evaluation = null }) {
           </Typography>
 
           {post.file && (
-            <CardMedia
-              component={post.file.endsWith('.mp3') || post.file.endsWith('.wav') ? 'audio' : 'img'}
-              src={`${process.env.REACT_APP_API_URL}/${post.file}`}
-              controls={post.file.endsWith('.mp3') || post.file.endsWith('.wav')}
-              sx={{ height: post.file.endsWith('.mp3') || post.file.endsWith('.wav') ? 'auto' : 200, mt: 2 }}
-            />
-          )}
+          
+  <>
+    {/\.(jpg|jpeg|png|gif)$/i.test(post.file) && (
+      <CardMedia
+        component="img"
+        image={`${process.env.REACT_APP_API_URL}/${post.file}`}
+        alt="Post media"
+        sx={{ height: 200, mt: 2 }}
+      />
+    )}
+
+    {/\.(mp3|wav)$/i.test(post.file) && (
+      <Box sx={{ mt: 2 }}>
+        <audio controls style={{ width: '100%' }}>
+          <source src={`${process.env.REACT_APP_API_URL}/${post.file}`} type={`audio/${post.file.split('.').pop()}`} />
+          Your browser does not support the audio element.
+        </audio>
+      </Box>
+    )}
+
+    {/\.(mp4|webm|ogg)$/i.test(post.file) && (
+      <Box sx={{ mt: 2 }}>
+        <video controls style={{ width: '100%' }}>
+          <source src={`${process.env.REACT_APP_API_URL}/${post.file}`} type={`video/${post.file.split('.').pop()}`} />
+          Your browser does not support the video tag.
+        </video>
+      </Box>
+    )}
+  </>
+)}
 
           {showActions && (
             <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>

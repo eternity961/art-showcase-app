@@ -4,7 +4,7 @@ const Notification = require('../models/Notification');
 exports.createPost = async (req, res) => {
   try {
     const { title, content, category } = req.body;
-    const file = req.file ? req.file.path : null;
+    const file = req.file ? req.file.path.replace(/\\/g, '/') : null; // 🔁 replace \ with /
     const post = new Post({ user: req.user.id, title, content, category, file });
     await post.save();
     res.status(201).json(post);
