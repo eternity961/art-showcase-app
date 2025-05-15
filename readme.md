@@ -1,8 +1,4 @@
-Here's a complete `README.md` file tailored for your **Art Showcase Web App**, assuming it's built with React, uses Material UI, connects to an Express/MongoDB backend, and includes features like posts, likes, comments, rankings, messaging, and role-based access:
 
----
-
-````markdown
 # 🎨 Art Showcase Platform — Web App
 
 This is the frontend (React) application for the **Art Showcase Platform**, a social platform for artists to showcase their work, interact, and compete through judge evaluations and user engagement.
@@ -75,7 +71,6 @@ The app will be available at `http://localhost:3000`.
 ```bash
 npm run dev
 ```
-
 The backend will be available at `http://localhost:4000`.
 ---
 
@@ -132,11 +127,9 @@ This project is licensed under the MIT License.
 
 Developed with ❤️ by \Dereje Gultu and his team memebers as part of a final-year university project.
 
----
-
 ```
 
 ---
 
-Let me know if you'd like me to generate the `README.md` file as a downloadable document or tailor it for deployment (e.g., Netlify + Render instructions).
+
 ```
