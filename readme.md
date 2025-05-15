@@ -1,3 +1,8 @@
+Here's a complete `README.md` file tailored for your **Art Showcase Web App**, assuming it's built with React, uses Material UI, connects to an Express/MongoDB backend, and includes features like posts, likes, comments, rankings, messaging, and role-based access:
+
+---
+
+````markdown
 # 🎨 Art Showcase Platform — Web App
 
 This is the frontend (React) application for the **Art Showcase Platform**, a social platform for artists to showcase their work, interact, and compete through judge evaluations and user engagement.
@@ -36,7 +41,7 @@ This is the frontend (React) application for the **Art Showcase Platform**, a so
 ```bash
 git clone https://github.com/your-username/art-showcase.git
 cd art-showcase/web
-```
+````
 
 ### 2. Install dependencies
 
@@ -49,7 +54,7 @@ npm install
 Create a `.env` file in the root of the `web` folder:
 
 ```
-REACT_APP_API_URL=http://localhost:5000
+REACT_APP_API_URL=http://localhost:4000
 ```
 
 > Replace with your deployed API URL if using production.
@@ -67,14 +72,20 @@ npm start
 The app will be available at `http://localhost:3000`.
 
 ---
+```bash
+npm run dev
+```
+
+The backend will be available at `http://localhost:4000`.
+---
 
 ## 🔐 Roles & Access
 
-| Role   | Capabilities                                                                 |
-|--------|------------------------------------------------------------------------------|
-| User   | Create posts, like/comment, message, view rankings, chat with others         |
-| Judge  | Evaluate top posts in each category, view and provide scores & feedback      |
-| Admin  | Manage users, assign judges, moderate content, oversee rankings              |
+| Role  | Capabilities                                                            |
+| ----- | ----------------------------------------------------------------------- |
+| User  | Create posts, like/comment, message, view rankings, chat with others    |
+| Judge | Evaluate top posts in each category, view and provide scores & feedback |
+| Admin | Manage users, assign judges, moderate content, oversee rankings         |
 
 ---
 
@@ -119,4 +130,13 @@ This project is licensed under the MIT License.
 
 ## 🧠 Author
 
-Developed with ❤️ by [Your Name] as part of a final-year university project.
+Developed with ❤️ by \Dereje Gultu and his team memebers as part of a final-year university project.
+
+---
+
+```
+
+---
+
+Let me know if you'd like me to generate the `README.md` file as a downloadable document or tailor it for deployment (e.g., Netlify + Render instructions).
+```
