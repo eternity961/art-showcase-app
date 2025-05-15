@@ -126,13 +126,7 @@ This project is licensed under the MIT License.
 
 ## 🧠 Author
 
-Developed with ❤️ by \Dereje Gultu and his team memebers as part of a final-year university project.
+Developed with ❤️ by Dereje Gultu and his team memebers as part of a final-year university project.
 
 ---
 
-```
-
----
-
-Let me know if you'd like me to generate the `README.md` file as a downloadable document or tailor it for deployment (e.g., Netlify + Render instructions).
-```
