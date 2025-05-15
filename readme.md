@@ -1,8 +1,4 @@
-Here's a complete `README.md` file tailored for your **Art Showcase Web App**, assuming it's built with React, uses Material UI, connects to an Express/MongoDB backend, and includes features like posts, likes, comments, rankings, messaging, and role-based access:
 
----
-
-````markdown
 # 🎨 Art Showcase Platform — Web App
 
 This is the frontend (React) application for the **Art Showcase Platform**, a social platform for artists to showcase their work, interact, and compete through judge evaluations and user engagement.
