@@ -55,7 +55,7 @@ function App() {
             </Route>
           </Route>
 
-          <Route element={<ProtectedRoute allowedRoles={['judge']} />}>
+          <Route element={<ProtectedRoute allowedRoles={['visual_judge', 'literal_judge', 'vocal_judge']} />}>
             <Route path="/" element={<Layout />}>
               <Route path="judge" element={<JudgeDashboard />} />
             </Route>
