@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext,useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import api from '../utils/api';
@@ -16,6 +16,8 @@ import CommentIcon from '@mui/icons-material/Comment';
 
 function PostCard({ post, onUpdate, showActions = true, evaluation = null }) {
   const { user } = useContext(AuthContext);
+  const [showFullContent, setShowFullContent] = useState(false);
+  const toggleContent = () => setShowFullContent((prev) => !prev);
 
   // Handle Like functionality
   const handleLike = async () => {
@@ -53,13 +55,14 @@ function PostCard({ post, onUpdate, showActions = true, evaluation = null }) {
 
           <Typography variant="h6">{post.title}</Typography>
           <Typography variant="body1" sx={{ mt: 1 }}>
-            {post.content.length > 100 ? post.content.slice(0, 100) + '...' : post.content}
-            {post.content.length > 100 && (
-              <Link to={`/post/${post._id}`} style={{ textDecoration: 'none', color: 'primary' }}>
-                {' '}See more
-              </Link>
-            )}
-          </Typography>
+  {showFullContent ? post.content : post.content.slice(0, 100) + (post.content.length > 100 ? '...' : '')}
+  {post.content.length > 100 && (
+    <Button onClick={toggleContent} size="small" sx={{ ml: 1, textTransform: 'none' }}>
+      {showFullContent ? 'See less' : 'See more'}
+    </Button>
+  )}
+</Typography>
+
 
           {post.file && (
           
