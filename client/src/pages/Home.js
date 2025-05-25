@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import {
   Container,
   Typography,
@@ -37,18 +37,18 @@ function Home() {
   const [search, setSearch] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await api.get('/api/posts');
-        setPosts(response.data);
-        setFilteredPosts(response.data);
-      } catch (err) {
-        console.error('Error fetching posts:', err);
-      }
-    };
-    fetchPosts();
+  const fetchPosts = useCallback(async () => {
+    try {
+      const response = await api.get('/api/posts');
+      setPosts(response.data);
+    } catch (err) {
+      console.error('Error fetching posts:', err);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
 
   useEffect(() => {
     const filtered = posts.filter((post) => {
@@ -60,39 +60,31 @@ function Home() {
     setFilteredPosts(filtered);
   }, [posts, selectedCategory, search]);
 
-  const handlePostCreated = (newPost) => {
-    const updated = [newPost, ...posts];
-    setPosts(updated);
+  const handlePostCreated = () => {
+    fetchPosts();
     setOpenDialog(false);
   };
 
-  const handlePostUpdate = (updatedPost) => {
-    const updated = posts.map((p) => (p._id === updatedPost._id ? updatedPost : p));
-    setPosts(updated);
+  const handlePostUpdate = () => {
+    fetchPosts();
   };
 
   const handleDialogOpen = () => setOpenDialog(true);
   const handleDialogClose = () => setOpenDialog(false);
 
   if (user?.role === 'admin') return <Navigate to="/admin" replace />;
-  if (user?.role === 'literal_judge' || user?.role === 'visual_judge' || user?.role === 'vocal_judge') return <Navigate to="/judge" replace />;
+  if (
+    user?.role === 'literal_judge' ||
+    user?.role === 'visual_judge' ||
+    user?.role === 'vocal_judge'
+  )
+    return <Navigate to="/judge" replace />;
 
   return (
     <Box sx={{ minHeight: '100vh', py: 4 }}>
       <Container maxWidth="lg">
-        {/* Hero Section */}
-        {/* <Box sx={{ textAlign: 'center', mb: 4, px: 2 }}>
-          <Typography
-            variant="h3"
-            fontWeight="bold"
-            sx={{ fontSize: { xs: '1.8rem', sm: '2.5rem', md: '3rem' } }}
-          >
-            🎨 Art Showcase Feed
-          </Typography>
-        </Box> */}
-
         <Box sx={{ display: 'flex', gap: 5 }}>
-          {/* Sidebar (Desktop Only) */}
+          {/* Sidebar */}
           <Paper
             elevation={2}
             sx={{
@@ -180,7 +172,7 @@ function Home() {
               )}
             </Box>
 
-            {/* Post List (1 per row) */}
+            {/* Post List */}
             <Box
               sx={{
                 display: 'flex',

@@ -5,9 +5,9 @@ import { AuthContext } from '../contexts/AuthContext';
 import PostCard from '../components/PostCard';
 import CommentCard from '../components/CommentCard';
 import { Container, TextField, Button, Box } from '@mui/material';
-import {Filter} from 'bad-words';
+import { Filter } from 'bad-words';
 
-const filter = new Filter(); // You can extend it with custom words: filter.addWords(...);
+const filter = new Filter(); // Extend with filter.addWords('yourword') if needed
 
 function PostDetail() {
   const { id } = useParams();
@@ -20,40 +20,47 @@ function PostDetail() {
     const fetchPost = async () => {
       try {
         const postResponse = await api.get(`/api/posts/${id}`);
-        const commentsResponse = await api.get(`/api/comments/${id}`);
-
-        // Clean all fetched comments before setting
-        const cleanedComments = commentsResponse.data.map((comment) => ({
-          ...comment,
-          content: filter.clean(comment.content),
-        }));
-
         setPost(postResponse.data);
-        setComments(cleanedComments);
       } catch (err) {
         console.error('Error fetching post:', err);
       }
     };
+
     fetchPost();
+    fetchComments();
   }, [id]);
+
+  const fetchComments = async () => {
+    try {
+      const commentsResponse = await api.get(`/api/comments/${id}`);
+      const cleanedComments = commentsResponse.data.map((comment) => ({
+        ...comment,
+        content: filter.clean(comment.content),
+      }));
+      setComments(cleanedComments);
+    } catch (err) {
+      console.error('Error fetching comments:', err);
+    }
+  };
 
   const handleComment = async (e) => {
     e.preventDefault();
     try {
-      const response = await api.post(`/api/comments/${id}`, { content });
-      const cleanedComment = {
-        ...response.data,
-        content: filter.clean(response.data.content),
-      };
-      setComments([cleanedComment, ...comments]);
+      await api.post(`/api/comments/${id}`, { content });
       setContent('');
+      fetchComments(); // Refetch after comment is added
     } catch (err) {
       console.error('Error creating comment:', err);
     }
   };
 
-  const handleDeleteComment = (commentId) => {
-    setComments(comments.filter((c) => c._id !== commentId));
+  const handleDeleteComment = async (commentId) => {
+    try {
+      await api.delete(`/api/comments/delete/${commentId}`);
+      fetchComments(); // Refetch after deletion
+    } catch (err) {
+      console.error('Error deleting comment:', err);
+    }
   };
 
   if (!post) return null;
