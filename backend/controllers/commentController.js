@@ -1,26 +1,47 @@
 const Comment = require('../models/Comment');
 const Post = require('../models/Post');
 const Notification = require('../models/Notification');
+const User = require('../models/User');
 
 exports.createComment = async (req, res) => {
   try {
     const { content } = req.body;
+    if (!content) {
+      return res.status(400).json({ message: 'Comment content is required' });
+    }
+
     const post = await Post.findById(req.params.postId);
     if (!post) return res.status(404).json({ message: 'Post not found' });
-    const comment = new Comment({ post: req.params.postId, user: req.user.id, content });
+
+    const comment = new Comment({
+      post: req.params.postId,
+      user: req.user.id,
+      content,
+    });
     await comment.save();
+
+    // Notify post owner if commenter is not the owner
     if (post.user.toString() !== req.user.id) {
+      const sender = await User.findById(req.user.id).select('username');
+
       const notification = new Notification({
-        user: post.user,
+        recipientId: post.user,
+        senderId: req.user.id,
         type: 'comment',
-        content: `${req.user.username} commented on your post`,
-        relatedId: comment._id,
+        message: `${sender.username} commented on your post "${post.title}".`,
+        post: post._id,
       });
-      await notification.save();
-      req.io.to(post.user.toString()).emit('notification', notification);
+      try {
+        await notification.save();
+        // Emit notification in real-time
+      } catch (error) {
+        console.error('Error creating notification:', error);
+      }
     }
+
     res.status(201).json(comment);
   } catch (err) {
+    console.error('Error creating comment:', err);
     res.status(500).json({ message: 'Error creating comment', error: err.message });
   }
 };

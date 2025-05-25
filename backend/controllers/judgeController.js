@@ -1,4 +1,5 @@
 const Post = require('../models/Post');
+const User = require('../models/User');
 const Evaluation = require('../models/Evaluation');
 const Notification = require('../models/Notification');
 
@@ -50,15 +51,23 @@ exports.evaluatePost = async (req, res) => {
     await evaluation.save();
 
     // Notify the post owner
-    const notification = new Notification({
-      user: post.user,
-      type: 'judge',
-      content: `Your post was evaluated by a judge.`,
-      relatedId: post._id,
-    });
+    if( post.user.toString() !== req.user.id) {
+    const sender = await User.findById(req.user.id).select('username');
+    try{
+          const notification = new Notification({
+          user: post.user, // recipient
+          fromUser: req.user.id, // sender
+          type: 'judge',
+          content: `${sender.username} evaluated your post "${post.title}" with a score of ${score}.`,
+          relatedId: post._id, // post reference
+        });
     await notification.save();
 
-    req.io.to(post.user.toString()).emit('notification', notification);
+    }catch (error) {
+      console.error('Error creating notification:', error);
+    }
+  }
+
     res.status(201).json(evaluation);
   } catch (err) {
     res.status(500).json({ message: 'Error evaluating post', error: err.message });
