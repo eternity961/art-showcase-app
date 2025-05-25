@@ -1,7 +1,7 @@
 const Comment = require('../models/Comment');
 const Post = require('../models/Post');
-const Notification = require('../models/Notification');
 const User = require('../models/User');
+const { createNotification } = require('./notificationController');
 
 exports.createComment = async (req, res) => {
   try {
@@ -21,23 +21,23 @@ exports.createComment = async (req, res) => {
     await comment.save();
 
     // Notify post owner if commenter is not the owner
+    console.log(post.user.toString() === req.user.id);
     if (post.user.toString() !== req.user.id) {
       const sender = await User.findById(req.user.id).select('username');
 
-      const notification = new Notification({
-        recipientId: post.user,
-        senderId: req.user.id,
-        type: 'comment',
-        message: `${sender.username} commented on your post "${post.title}".`,
-        post: post._id,
-      });
-      try {
-        await notification.save();
-        // Emit notification in real-time
-      } catch (error) {
+     try{
+      await createNotification({
+          recipientId: post.user,
+          senderId: req.user.id,
+          type: 'comment',
+          message: `${sender.username} commented on your post "${post.title}".`,
+          postId: post._id,
+        });
+      }catch (error) {
         console.error('Error creating notification:', error);
       }
-    }
+     }
+
 
     res.status(201).json(comment);
   } catch (err) {
