@@ -1,7 +1,8 @@
-import React, { useContext,useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import api from '../utils/api';
+import {Filter} from 'bad-words';
 import {
   Card,
   CardMedia,
@@ -14,12 +15,13 @@ import {
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import CommentIcon from '@mui/icons-material/Comment';
 
+const filter = new Filter(); // You can customize with filter.addWords(...) if needed
+
 function PostCard({ post, onUpdate, showActions = true, evaluation = null }) {
   const { user } = useContext(AuthContext);
   const [showFullContent, setShowFullContent] = useState(false);
   const toggleContent = () => setShowFullContent((prev) => !prev);
 
-  // Handle Like functionality
   const handleLike = async () => {
     try {
       const response = await api.post(`/api/posts/${post._id}/like`);
@@ -29,10 +31,14 @@ function PostCard({ post, onUpdate, showActions = true, evaluation = null }) {
     }
   };
 
-  const avatarUrl =
-    post.user?.profile?.avatar
-      ? `${process.env.REACT_APP_API_URL}/${post.user.profile.avatar}`
-      : '/assets/default-avatar.png';
+  const avatarUrl = post.user?.profile?.avatar
+    ? `${process.env.REACT_APP_API_URL}/${post.user.profile.avatar}`
+    : '/assets/default-avatar.png';
+
+  const cleanTitle = filter.clean(post.title);
+  const cleanContent = filter.clean(post.content);
+  const truncatedCleanContent =
+    cleanContent.slice(0, 100) + (post.content.length > 100 ? '...' : '');
 
   return (
     <Card sx={{ mb: 2, p: 2 }}>
@@ -42,66 +48,76 @@ function PostCard({ post, onUpdate, showActions = true, evaluation = null }) {
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Avatar src={avatarUrl} sx={{ width: 40, height: 40, mr: 2 }} />
             <Box>
-             <Typography variant="body1">
-  <Link to={`/profile/${post.user._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-    {post.user.username}
-  </Link>
-</Typography>
-
+              <Typography variant="body1">
+                <Link
+                  to={`/profile/${post.user._id}`}
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  {post.user.username}
+                </Link>
+              </Typography>
             </Box>
           </Box>
 
-          <Typography variant="h6">{post.title}</Typography>
-          <Typography variant="body1" sx={{ mt: 1 }}>
-  {showFullContent ? post.content : post.content.slice(0, 100) + (post.content.length > 100 ? '...' : '')}
-  {post.content.length > 100 && (
-    <Button onClick={toggleContent} size="small" sx={{ ml: 1, textTransform: 'none' }}>
-      {showFullContent ? 'See less' : 'See more'}
-    </Button>
-  )}
-</Typography>
+          <Typography variant="h6">{cleanTitle}</Typography>
 
+          <Typography variant="body1" sx={{ mt: 1 }}>
+            {showFullContent ? cleanContent : truncatedCleanContent}
+            {post.content.length > 100 && (
+              <Button
+                onClick={toggleContent}
+                size="small"
+                sx={{ ml: 1, textTransform: 'none' }}
+              >
+                {showFullContent ? 'See less' : 'See more'}
+              </Button>
+            )}
+          </Typography>
 
           {post.file && (
-          
-  <>
-    {/\.(jpg|jpeg|png|gif)$/i.test(post.file) && (
-      <CardMedia
-  component="img"
-  image={`${process.env.REACT_APP_API_URL}/${post.file}`}
-  alt="Post media"
-  sx={{
-    width: '100%',
-    height: 'auto',
-    maxHeight: 500,
-    mt: 2,
-    objectFit: 'contain',
-    borderRadius: 1,
-    border: '1px solid #ddd',
-  }}
-/>
+            <>
+              {/\.(jpg|jpeg|png|gif)$/i.test(post.file) && (
+                <CardMedia
+                  component="img"
+                  image={`${process.env.REACT_APP_API_URL}/${post.file}`}
+                  alt="Post media"
+                  sx={{
+                    width: '100%',
+                    height: 'auto',
+                    maxHeight: 500,
+                    mt: 2,
+                    objectFit: 'contain',
+                    borderRadius: 1,
+                    border: '1px solid #ddd',
+                  }}
+                />
+              )}
 
-    )}
+              {/\.(mp3|wav)$/i.test(post.file) && (
+                <Box sx={{ mt: 2 }}>
+                  <audio controls style={{ width: '100%' }}>
+                    <source
+                      src={`${process.env.REACT_APP_API_URL}/${post.file}`}
+                      type={`audio/${post.file.split('.').pop()}`}
+                    />
+                    Your browser does not support the audio element.
+                  </audio>
+                </Box>
+              )}
 
-    {/\.(mp3|wav)$/i.test(post.file) && (
-      <Box sx={{ mt: 2 }}>
-        <audio controls style={{ width: '100%' }}>
-          <source src={`${process.env.REACT_APP_API_URL}/${post.file}`} type={`audio/${post.file.split('.').pop()}`} />
-          Your browser does not support the audio element.
-        </audio>
-      </Box>
-    )}
-
-    {/\.(mp4|webm|ogg)$/i.test(post.file) && (
-      <Box sx={{ mt: 2 }}>
-        <video controls style={{ width: '100%' }}>
-          <source src={`${process.env.REACT_APP_API_URL}/${post.file}`} type={`video/${post.file.split('.').pop()}`} />
-          Your browser does not support the video tag.
-        </video>
-      </Box>
-    )}
-  </>
-)}
+              {/\.(mp4|webm|ogg)$/i.test(post.file) && (
+                <Box sx={{ mt: 2 }}>
+                  <video controls style={{ width: '100%' }}>
+                    <source
+                      src={`${process.env.REACT_APP_API_URL}/${post.file}`}
+                      type={`video/${post.file.split('.').pop()}`}
+                    />
+                    Your browser does not support the video tag.
+                  </video>
+                </Box>
+              )}
+            </>
+          )}
 
           {showActions && (
             <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
@@ -131,8 +147,19 @@ function PostCard({ post, onUpdate, showActions = true, evaluation = null }) {
         )}
 
         {evaluation && (
-          <Box sx={{ width: 200, textAlign: 'right', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: 'green' }}>
+          <Box
+            sx={{
+              width: 200,
+              textAlign: 'right',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+            }}
+          >
+            <Typography
+              variant="subtitle1"
+              sx={{ fontWeight: 'bold', color: 'green' }}
+            >
               Score: {evaluation.score}/10
             </Typography>
           </Box>

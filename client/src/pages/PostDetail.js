@@ -5,6 +5,9 @@ import { AuthContext } from '../contexts/AuthContext';
 import PostCard from '../components/PostCard';
 import CommentCard from '../components/CommentCard';
 import { Container, TextField, Button, Box } from '@mui/material';
+import {Filter} from 'bad-words';
+
+const filter = new Filter(); // You can extend it with custom words: filter.addWords(...);
 
 function PostDetail() {
   const { id } = useParams();
@@ -18,8 +21,15 @@ function PostDetail() {
       try {
         const postResponse = await api.get(`/api/posts/${id}`);
         const commentsResponse = await api.get(`/api/comments/${id}`);
+
+        // Clean all fetched comments before setting
+        const cleanedComments = commentsResponse.data.map((comment) => ({
+          ...comment,
+          content: filter.clean(comment.content),
+        }));
+
         setPost(postResponse.data);
-        setComments(commentsResponse.data);
+        setComments(cleanedComments);
       } catch (err) {
         console.error('Error fetching post:', err);
       }
@@ -31,7 +41,11 @@ function PostDetail() {
     e.preventDefault();
     try {
       const response = await api.post(`/api/comments/${id}`, { content });
-      setComments([response.data, ...comments]);
+      const cleanedComment = {
+        ...response.data,
+        content: filter.clean(response.data.content),
+      };
+      setComments([cleanedComment, ...comments]);
       setContent('');
     } catch (err) {
       console.error('Error creating comment:', err);
@@ -39,7 +53,7 @@ function PostDetail() {
   };
 
   const handleDeleteComment = (commentId) => {
-    setComments(comments.filter(c => c._id !== commentId));
+    setComments(comments.filter((c) => c._id !== commentId));
   };
 
   if (!post) return null;
@@ -64,8 +78,12 @@ function PostDetail() {
         </Box>
       )}
       <Box>
-        {comments.map(comment => (
-          <CommentCard key={comment._id} comment={comment} onDelete={handleDeleteComment} />
+        {comments.map((comment) => (
+          <CommentCard
+            key={comment._id}
+            comment={comment}
+            onDelete={handleDeleteComment}
+          />
         ))}
       </Box>
     </Container>
