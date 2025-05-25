@@ -3,10 +3,10 @@ require('dotenv').config();
 
 const sendEmail = async ({ to, subject, html }) => {
   const transporter = nodemailer.createTransport({
-    service: 'Gmail', // Or use 'Outlook', 'Yahoo', or a custom SMTP
+    service: 'Gmail', // My personal email aderess for testing
     auth: {
-      user: process.env.EMAIL_USER,  // your email
-      pass: process.env.EMAIL_PASS   // app password or real password
+      user: process.env.EMAIL_USER,  // This is my personal email address
+      pass: process.env.EMAIL_PASS   // My app password
     }
   });
 

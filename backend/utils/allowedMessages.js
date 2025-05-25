@@ -1,4 +1,4 @@
-// utils/allowedMessages.js
+// This module checks if a message is allowed based on predefined keywords/phrases.
 const natural = require('natural');
 const tokenizer = new natural.WordTokenizer();
 

@@ -1,5 +1,22 @@
 const Notification = require('../models/Notification');
 
+// controllers/NotificationController.js
+exports.createNotification = async ({ recipientId, senderId, type, message, postId }) => {
+  try {
+    const notification = new Notification({
+      user: recipientId,             // recipient
+      fromUser: senderId,            // sender
+      type,
+      content: message,              // content field, not message
+      relatedId: postId || null,     // match your schema
+    });
+
+    await notification.save();
+  } catch (err) {
+    console.error('Error creating notification:', err.message);
+  }
+};
+
 exports.getNotifications = async (req, res) => {
   try {
     const notifications = await Notification.find({ user: req.user.id })
