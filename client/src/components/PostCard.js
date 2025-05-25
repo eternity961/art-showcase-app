@@ -42,14 +42,12 @@ function PostCard({ post, onUpdate, showActions = true, evaluation = null }) {
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Avatar src={avatarUrl} sx={{ width: 40, height: 40, mr: 2 }} />
             <Box>
-              <Typography variant="body1">
-                <Link to={`/profile/${post.user._id}`} style={{ textDecoration: 'none' }}>
-                  {post.user.username}
-                </Link>
-              </Typography>
-              <Link to={`/profile/${post.user._id}`} style={{ textDecoration: 'none' }}>
-                <Typography sx={{ fontSize: 14, color: 'blue' }}>View Profile</Typography>
-              </Link>
+             <Typography variant="body1">
+  <Link to={`/profile/${post.user._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+    {post.user.username}
+  </Link>
+</Typography>
+
             </Box>
           </Box>
 
@@ -69,11 +67,20 @@ function PostCard({ post, onUpdate, showActions = true, evaluation = null }) {
   <>
     {/\.(jpg|jpeg|png|gif)$/i.test(post.file) && (
       <CardMedia
-        component="img"
-        image={`${process.env.REACT_APP_API_URL}/${post.file}`}
-        alt="Post media"
-        sx={{ height: 200, mt: 2 }}
-      />
+  component="img"
+  image={`${process.env.REACT_APP_API_URL}/${post.file}`}
+  alt="Post media"
+  sx={{
+    width: '100%',
+    height: 'auto',
+    maxHeight: 500,
+    mt: 2,
+    objectFit: 'contain',
+    borderRadius: 1,
+    border: '1px solid #ddd',
+  }}
+/>
+
     )}
 
     {/\.(mp3|wav)$/i.test(post.file) && (
