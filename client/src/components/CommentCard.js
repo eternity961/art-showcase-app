@@ -11,7 +11,7 @@ function CommentCard({ comment, onDelete }) {
   const handleDelete = async () => {
     try {
       await api.delete(`/api/comments/${comment._id}`);
-      onDelete(comment._id);
+      onDelete(comment._id); // Notify parent to remove from UI
     } catch (err) {
       console.error('Error deleting comment:', err);
     }
@@ -21,7 +21,9 @@ function CommentCard({ comment, onDelete }) {
     <Card sx={{ mb: 1 }}>
       <CardContent>
         <Typography variant="body2">
-          <Link to={`/profile/${comment.user._id}`}>{comment.user.username}</Link>: {comment.content}
+          <Link to={`/profile/${comment.user._id}`}>
+            {comment.user.username}
+          </Link>: {comment.content}
         </Typography>
         {(user?.id === comment.user._id || user?.role === 'admin') && (
           <Button startIcon={<DeleteIcon />} color="error" onClick={handleDelete}>

@@ -7,7 +7,7 @@ import CommentCard from '../components/CommentCard';
 import { Container, TextField, Button, Box } from '@mui/material';
 import { Filter } from 'bad-words';
 
-const filter = new Filter(); // Extend with filter.addWords('yourword') if needed
+const filter = new Filter();
 
 function PostDetail() {
   const { id } = useParams();
@@ -45,22 +45,18 @@ function PostDetail() {
 
   const handleComment = async (e) => {
     e.preventDefault();
+    if (!content.trim()) return;
     try {
       await api.post(`/api/comments/${id}`, { content });
       setContent('');
-      fetchComments(); // Refetch after comment is added
+      fetchComments();
     } catch (err) {
       console.error('Error creating comment:', err);
     }
   };
 
-  const handleDeleteComment = async (commentId) => {
-    try {
-      await api.delete(`/api/comments/delete/${commentId}`);
-      fetchComments(); // Refetch after deletion
-    } catch (err) {
-      console.error('Error deleting comment:', err);
-    }
+  const handleDeleteComment = (commentId) => {
+    setComments((prev) => prev.filter((c) => c._id !== commentId));
   };
 
   if (!post) return null;
@@ -68,6 +64,7 @@ function PostDetail() {
   return (
     <Container sx={{ py: 4 }}>
       <PostCard post={post} onUpdate={setPost} />
+      
       {user && (
         <Box component="form" onSubmit={handleComment} sx={{ mb: 4 }}>
           <TextField
@@ -84,6 +81,7 @@ function PostDetail() {
           </Button>
         </Box>
       )}
+
       <Box>
         {comments.map((comment) => (
           <CommentCard
