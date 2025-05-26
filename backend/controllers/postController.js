@@ -130,3 +130,51 @@ exports.deletePost = async (req, res) => {
     res.status(500).json({ message: 'Error deleting post', error: err.message });
   }
 };
+
+exports.getReportedPosts = async (req, res) => {
+  try {
+    const reportedPosts = await Post.find({ reported: true })
+      .populate('user', 'username profile.avatar')
+      .sort({ createdAt: -1 });
+
+    res.json(reportedPosts);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching reported posts', error: err.message });
+  }
+};
+exports.updatePost = async (req, res) => {
+  try {
+    const { title, content, category } = req.body;
+    const post = await Post.findById(req.params.id);
+
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+
+    if (post.user.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Unauthorized to edit this post' });
+    }
+
+    post.title = title || post.title;
+    post.content = content || post.content;
+    post.category = category || post.category;
+    if (req.file) {
+      post.file = req.file.path.replace(/\\/g, '/');
+    }
+
+    await post.save();
+    res.json({ message: 'Post updated successfully', post });
+  } catch (err) {
+    res.status(500).json({ message: 'Error updating post', error: err.message });
+  }
+};
+exports.reportPost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+
+    post.reported = true;
+    await post.save();
+    res.json({ message: 'Post reported successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error reporting post', error: err.message });
+  }
+};

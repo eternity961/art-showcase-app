@@ -7,6 +7,10 @@ const postSchema = new mongoose.Schema({
   file: { type: String }, // Path to audio/image file
   category: { type: String, enum: ['literal', 'visual', 'vocal'], required: true },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  reported: {
+  type: Boolean,
+  default: false,
+},
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date },
 });
