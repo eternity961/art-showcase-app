@@ -12,7 +12,6 @@ import PostDetail from './pages/PostDetail';
 import PostPage from './pages/PostPage';
 import RankPage from './pages/RankPage';
 import Messenger from './pages/Messenger';
-import Notifications from './pages/Notifications';
 import AdminDashboard from './pages/AdminDashboard';
 import JudgeDashboard from './pages/JudgeDashboard';
 import TopRankedPost from './pages/TopRankedPost';
@@ -21,6 +20,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import VerifyOtp from './pages/VerifyOtp';
 import ProtectedRoute from './components/ProtectedRoute';
+import NotificationsPage from './pages/NotificationsPage';
 
 function App() {
   return (
@@ -41,10 +41,10 @@ function App() {
               <Route path="profile/:id?" element={<Profile />} />
               <Route path="post/:id" element={<PostDetail />} />
               <Route path="messenger" element={<Messenger />} />
-              <Route path="notifications" element={<Notifications />} />
               <Route path="/rankings" element={<RankPage />} />
               <Route path="/top-ranked" element={<TopRankedPost />} />
               <Route path="/change-password" element={<ChangePassword />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
             </Route>
           </Route>
 

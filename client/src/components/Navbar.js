@@ -23,9 +23,10 @@ import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { AuthContext } from '../contexts/AuthContext';
-
+import { NotificationContext } from '../contexts/NotificationContext';
 function Navbar() {
-  const { user, logout, notifications } = useContext(AuthContext);
+  const { notifications, unreadCount } = useContext(NotificationContext);
+  const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -144,11 +145,12 @@ function Navbar() {
           {isMobile ? (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {user ? ( <>
-                <IconButton color="inherit" component={Link} to="/notifications">
-                    <Badge badgeContent={notifications.filter((n) => !n.read).length} color="secondary">
-                      <NotificationsIcon />
-                    </Badge>
-                  </IconButton>
+               <IconButton color="inherit" component={Link} to="/notifications">
+  <Badge badgeContent={unreadCount} color="secondary">
+    <NotificationsIcon />
+  </Badge>
+</IconButton>
+
               </>) : (<></>) }
               <IconButton onClick={toggleDrawer(true)} color="inherit">
                 <MenuIcon />
