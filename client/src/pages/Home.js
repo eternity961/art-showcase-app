@@ -13,6 +13,7 @@ import {
   ListItemButton,
   ListItemText,
   Paper,
+  CircularProgress,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { Navigate } from 'react-router-dom';
@@ -36,13 +37,17 @@ function Home() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [search, setSearch] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
-
+  const [loading, setLoading] = useState(true);
+  // Fetch posts from backend
   const fetchPosts = useCallback(async () => {
+    setLoading(true);
     try {
       const response = await api.get('/api/posts');
       setPosts(response.data);
     } catch (err) {
       console.error('Error fetching posts:', err);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -50,48 +55,49 @@ function Home() {
     fetchPosts();
   }, [fetchPosts]);
 
+  // Filter posts based on category and search query
   useEffect(() => {
     const filtered = posts.filter((post) => {
-      const inCategory =
-        selectedCategory === 'all' || post.category === selectedCategory;
-      const matchesSearch = post.title.toLowerCase().includes(search.toLowerCase());
-      return inCategory && matchesSearch;
+      const matchesCategory = selectedCategory === 'all' || post.category === selectedCategory;
+      const matchesSearch = post.title?.toLowerCase().includes(search.toLowerCase());
+      return matchesCategory && matchesSearch;
     });
     setFilteredPosts(filtered);
   }, [posts, selectedCategory, search]);
 
-  const handlePostCreated = () => {
+  // Handle post creation: refetch posts and close dialog
+  const handlePostCreated = useCallback(() => {
     fetchPosts();
     setOpenDialog(false);
-  };
+  }, [fetchPosts]);
 
-  const handlePostUpdate = (updatedPost) => {
-    setPosts((prevPosts) =>
-      prevPosts.map((post) => (post._id === updatedPost._id ? updatedPost : post))
+  // Update a post in the state
+  const handlePostUpdate = useCallback((updatedPost) => {
+    setPosts((prev) =>
+      prev.map((post) => (post._id === updatedPost._id ? updatedPost : post))
     );
-  };
+  }, []);
 
-  const handleDelete = (postId) => {
-    setPosts((prevPosts) => prevPosts.filter((post) => post._id !== postId));
-    setFilteredPosts((prevFiltered) => prevFiltered.filter((post) => post._id !== postId));
-  };
+  // Remove a deleted post from both posts and filteredPosts
+  const handleDelete = useCallback((postId) => {
+    setPosts((prev) => prev.filter((post) => post._id !== postId));
+    setFilteredPosts((prev) => prev.filter((post) => post._id !== postId));
+  }, []);
 
+  // Handlers for dialog open/close
   const handleDialogOpen = () => setOpenDialog(true);
   const handleDialogClose = () => setOpenDialog(false);
 
+  // Redirect based on role
   if (user?.role === 'admin') return <Navigate to="/admin" replace />;
-  if (
-    user?.role === 'literal_judge' ||
-    user?.role === 'visual_judge' ||
-    user?.role === 'vocal_judge'
-  )
+  if (['literal_judge', 'visual_judge', 'vocal_judge'].includes(user?.role))
     return <Navigate to="/judge" replace />;
 
   return (
     <Box sx={{ minHeight: '100vh', py: 4 }}>
       <Container maxWidth="lg">
         <Box sx={{ display: 'flex', gap: 5 }}>
-          {/* Sidebar */}
+          {/* Sidebar - hidden on xs, visible md+ */}
           <Paper
             elevation={2}
             sx={{
@@ -112,7 +118,11 @@ function Home() {
               label="Search posts"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              InputProps={{ endAdornment: <SearchIcon sx={{ color: 'gray' }} /> }}
+              InputProps={{
+                endAdornment: <SearchIcon sx={{ color: 'gray' }} />,
+                readOnly: !user,
+              }}
+              disabled={!user}
             />
             <Typography variant="subtitle1" fontWeight="bold" sx={{ mt: 1 }}>
               Categories
@@ -122,23 +132,23 @@ function Home() {
                 <ListItemButton
                   key={option.value}
                   selected={selectedCategory === option.value}
-                  onClick={() => setSelectedCategory(option.value)}
+                  onClick={() => user && setSelectedCategory(option.value)}
+                  disabled={!user}
                 >
                   <ListItemText primary={option.label} />
                 </ListItemButton>
               ))}
             </List>
 
-            {user && (
-              <Button
-                variant="contained"
-                fullWidth
-                onClick={handleDialogOpen}
-                sx={{ mt: 2 }}
-              >
-                Create Post
-              </Button>
-            )}
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={handleDialogOpen}
+              sx={{ mt: 2 }}
+              disabled={!user}
+            >
+              Create Post
+            </Button>
           </Paper>
 
           {/* Main Content */}
@@ -156,8 +166,9 @@ function Home() {
                 select
                 label="Category"
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
+                onChange={(e) => user && setSelectedCategory(e.target.value)}
                 fullWidth
+                disabled={!user}
               >
                 {categories.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
@@ -169,33 +180,61 @@ function Home() {
                 label="Search posts"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                InputProps={{ endAdornment: <SearchIcon sx={{ color: 'gray' }} /> }}
+                InputProps={{
+                  endAdornment: <SearchIcon sx={{ color: 'gray' }} />,
+                  readOnly: !user,
+                }}
                 fullWidth
+                disabled={!user}
               />
-              {user && (
-                <Button variant="contained" fullWidth onClick={handleDialogOpen}>
-                  Create Post
-                </Button>
-              )}
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={handleDialogOpen}
+                disabled={!user}
+              >
+                Create Post
+              </Button>
             </Box>
 
             {/* Post List */}
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 3,
-              }}
-            >
-              {filteredPosts.map((post) => (
-                <PostCard
-                  key={post._id}
-                  post={post}
-                  onUpdate={handlePostUpdate}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </Box>
+            {loading ? (
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  mt: 6,
+                }}
+              >
+                <CircularProgress />
+              </Box>
+            ) : filteredPosts.length === 0 ? (
+              <Typography variant="body1" color="text.secondary" align="center" sx={{ mt: 6 }}>
+                No posts found.
+              </Typography>
+            ) : (
+              <Box
+  sx={{
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 3,
+    pointerEvents: user ? 'auto' : 'none',      // disables interaction when no user
+    cursor: user ? 'default' : 'not-allowed',   // changes cursor style when disabled
+    opacity: user ? 1 : 0.6,                     // optionally dim it to show disabled state
+  }}
+>
+  {filteredPosts.map((post) => (
+    <PostCard
+      key={post._id}
+      post={post}
+      onUpdate={handlePostUpdate}
+      onDelete={handleDelete}
+      disableActions={!user || post.userId !== user._id}
+    />
+  ))}
+</Box>
+
+            )}
           </Box>
         </Box>
 

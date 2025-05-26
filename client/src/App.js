@@ -35,10 +35,13 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
 
+ <Route path="/" element={<Layout />}>
+    <Route index element={<Home />} />
+  </Route>
           {/* Protected routes (require login) */}
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Layout />}>
-              <Route index element={<Home />} />
+          
               <Route path="profile/:id?" element={<Profile />} />
               <Route path="post/:id" element={<PostDetail />} />
               <Route path="messenger" element={<Messenger />} />
