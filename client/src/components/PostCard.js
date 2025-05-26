@@ -57,6 +57,8 @@ const StyledDialogActions = styled(DialogActions)(({ theme }) => ({
 const filter = new Filter();
 
 const PostCard = ({ post, onUpdate, onDelete }) => {
+  const [expanded, setExpanded] = useState(false);
+
   const { user } = useContext(AuthContext);
   const [anchorEl, setAnchorEl] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
@@ -223,9 +225,22 @@ const PostCard = ({ post, onUpdate, onDelete }) => {
       <Typography variant="h6" mt={1}>
         {cleanTitle}
       </Typography>
-      <Typography variant="body2" mt={1}>
-        {showContent ? cleanContent : cleanContent.slice(0, 100) + '...'}
-      </Typography>
+     <Typography variant="body2" mt={1}>
+  {cleanContent.length <= 100 || expanded
+    ? cleanContent
+    : `${cleanContent.slice(0, 100)}...`}
+</Typography>
+
+{cleanContent.length > 100 && (
+  <Button
+    size="small"
+    onClick={() => setExpanded(!expanded)}
+    sx={{ textTransform: 'none', mt: 1, px: 0 }}
+  >
+    {expanded ? 'See Less' : 'See More'}
+  </Button>
+)}
+
 
       {post.file && (
         <CardMedia
