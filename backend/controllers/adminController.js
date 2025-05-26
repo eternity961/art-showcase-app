@@ -35,17 +35,30 @@ exports.unbanUser = async (req, res) => {
   }
 };
 
+// controllers/adminController.js
 exports.assignJudge = async (req, res) => {
   try {
+    const { role } = req.body; // Expecting 'literal_judge', etc.
     const user = await User.findById(req.params.id);
+
     if (!user) return res.status(404).json({ message: 'User not found' });
-    user.role = 'judge';
+
+    const validRoles = ['literal_judge', 'visual_judge', 'vocal_judge'];
+
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ message: 'Invalid judge role' });
+    }
+
+    user.role = role;
     await user.save();
-    res.json({ message: 'User assigned as judge' });
+
+    res.json({ message: `User assigned as ${role}` });
   } catch (err) {
     res.status(500).json({ message: 'Error assigning judge', error: err.message });
   }
 };
+
+
 
 exports.deletePost = async (req, res) => {
   try {

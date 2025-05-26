@@ -4,7 +4,7 @@ const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['user', 'judge', 'admin'], default: 'user' },
+  role: { type: String, enum: ['user', 'judge', 'admin','visual_judge','vocal_judge','literal_judge'], default: 'user' },
   isBanned: { type: Boolean, default: false },
   profile: {
     bio: { type: String, default: '' },
