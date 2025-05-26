@@ -1,14 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Typography, Card, CardContent, Button, Box, Avatar, Dialog, DialogTitle,
-  DialogContent, DialogActions, CircularProgress, Container, Paper,
-  TextField, InputAdornment, MenuItem, useMediaQuery, Link, IconButton,
-  Menu, MenuItem as DropdownItem
+  Typography,
+  Card,
+  CardContent,
+  Button,
+  Box,
+  Avatar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
+  Container,
+  Paper,
+  TextField,
+  InputAdornment,
+  MenuItem,
+  useMediaQuery,
+  Link,
+  IconButton,
+  Menu,
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import SearchIcon from '@mui/icons-material/Search';
 import { useTheme } from '@mui/material/styles';
-import api from '../utils/api';
+import api from '../utils/api'; // Make sure your api utility exports axios or similar configured instance
 
 const categories = ['all', 'literal', 'visual', 'vocal'];
 
@@ -26,34 +42,44 @@ const ReportedPosts = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const fetchReportedPosts = async () => {
-    try {
-      const response = await api.get('/api/posts/reported/all');
-      setReportedPosts(response.data);
-    } catch (err) {
-      console.error('Failed to load reported posts:', err);
-    }
-  };
-
+  // Fetch reported posts on mount
   useEffect(() => {
+    const fetchReportedPosts = async () => {
+      try {
+        const response = await api.get('/api/posts/reported/all');
+        // Defensive: ensure posts have _id
+        const postsWithId = response.data.map(post => ({
+          ...post,
+          _id: post._id || post.id || Math.random().toString(36).slice(2),
+        }));
+        setReportedPosts(postsWithId);
+      } catch (err) {
+        console.error('Failed to load reported posts:', err);
+      }
+    };
     fetchReportedPosts();
   }, []);
 
+  // Filter posts by search and category whenever inputs change
   useEffect(() => {
     const filtered = reportedPosts.filter((post) => {
-      const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch =
+        post.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        post.user?.username?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = categoryFilter === 'all' || post.category === categoryFilter;
       return matchesSearch && matchesCategory;
     });
     setFilteredPosts(filtered);
   }, [searchTerm, categoryFilter, reportedPosts]);
 
+  // Delete post handler
   const handleDelete = async (postId) => {
     setLoading(true);
     try {
       await api.delete(`/api/posts/${postId}`);
       setReportedPosts((prev) => prev.filter((p) => p._id !== postId));
       setSelectedPost(null);
+      handleMenuClose();
     } catch (err) {
       console.error('Delete error:', err);
     } finally {
@@ -61,23 +87,26 @@ const ReportedPosts = () => {
     }
   };
 
+  // Open menu for dropdown on a specific post
   const handleMenuOpen = (event, postId) => {
     setAnchorEl(event.currentTarget);
     setMenuPostId(postId);
   };
 
+  // Close dropdown menu
   const handleMenuClose = () => {
     setAnchorEl(null);
     setMenuPostId(null);
   };
 
+  // Toggle post content expand/collapse
   const toggleExpand = (postId) => {
     setExpandedPostId((prev) => (prev === postId ? null : postId));
   };
 
   return (
     <Box sx={{ display: 'flex' }}>
-      {/* Sidebar */}
+      {/* Sidebar - hidden on mobile */}
       {!isMobile && (
         <Paper
           elevation={3}
@@ -112,7 +141,7 @@ const ReportedPosts = () => {
           <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
             Category
           </Typography>
-          {categories.map(cat => (
+          {categories.map((cat) => (
             <Link
               key={cat}
               onClick={() => setCategoryFilter(cat)}
@@ -139,6 +168,7 @@ const ReportedPosts = () => {
           Reported Posts
         </Typography>
 
+        {/* Mobile filters */}
         {isMobile && (
           <>
             <TextField
@@ -149,7 +179,7 @@ const ReportedPosts = () => {
               fullWidth
               sx={{ mb: 3 }}
             >
-              {categories.map(cat => (
+              {categories.map((cat) => (
                 <MenuItem key={cat} value={cat}>
                   {cat === 'all' ? 'All' : cat.charAt(0).toUpperCase() + cat.slice(1)}
                 </MenuItem>
@@ -178,57 +208,95 @@ const ReportedPosts = () => {
           <Typography>No reported posts found.</Typography>
         ) : (
           filteredPosts.map((post) => {
-            const isExpanded = expandedPostId === post._id;
+            const postId = post._id || post.id || Math.random().toString(36).slice(2);
+            const isExpanded = expandedPostId === postId;
             const contentPreview = isExpanded
               ? post.content
-              : post.content.length > 150
+              : post.content && post.content.length > 150
               ? `${post.content.slice(0, 150)}...`
               : post.content;
 
             return (
-              <Card key={post._id} sx={{ my: 2, p: 2, position: 'relative' }}>
+              <Card key={postId} sx={{ my: 2, p: 2, position: 'relative' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <Avatar
-                      src={post.user?.profile?.avatar ? `${process.env.REACT_APP_API_URL}/${post.user.profile.avatar}` : '/assets/default-avatar.png'}
+                      src={
+                        post.user?.profile?.avatar
+                          ? `${process.env.REACT_APP_API_URL}/${post.user.profile.avatar}`
+                          : '/assets/default-avatar.png'
+                      }
                       sx={{ mr: 2 }}
                     />
-                    <Typography variant="body1">{post.user?.username}</Typography>
+                    <Typography variant="body1">{post.user?.username || 'Unknown User'}</Typography>
                   </Box>
-                  <IconButton onClick={(e) => handleMenuOpen(e, post._id)}>
+                  <IconButton onClick={(e) => handleMenuOpen(e, postId)} aria-label="post menu">
                     <MoreVertIcon />
                   </IconButton>
                 </Box>
 
                 <CardContent>
-                  <Typography variant="h6">{post.title}</Typography>
+                  <Typography variant="h6">{post.title || 'Untitled Post'}</Typography>
+
+                  {/* Post Media Preview */}
+                  {post.media && (
+                    <Box sx={{ my: 2 }}>
+                      {/\.(jpg|jpeg|png|gif|webp)$/i.test(post.media) && (
+                        <img
+                          src={`${process.env.REACT_APP_API_URL}/${post.media}`}
+                          alt="Post media"
+                          style={{ maxWidth: '100%', borderRadius: 8 }}
+                        />
+                      )}
+                      {/\.(mp3|wav|ogg)$/i.test(post.media) && (
+                        <audio controls style={{ width: '100%', marginTop: 8 }}>
+                          <source src={`${process.env.REACT_APP_API_URL}/${post.media}`} />
+                          Your browser does not support the audio element.
+                        </audio>
+                      )}
+                      {/\.(mp4|webm|ogg)$/i.test(post.media) && (
+                        <video
+                          controls
+                          style={{ width: '100%', maxHeight: 300, borderRadius: 8, marginTop: 8 }}
+                        >
+                          <source src={`${process.env.REACT_APP_API_URL}/${post.media}`} />
+                          Your browser does not support the video tag.
+                        </video>
+                      )}
+                    </Box>
+                  )}
+
                   <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
                     {contentPreview}
-                    {post.content.length > 150 && (
-                      <Button size="small" onClick={() => toggleExpand(post._id)}>
+                    {post.content && post.content.length > 150 && (
+                      <Button size="small" onClick={() => toggleExpand(postId)}>
                         {isExpanded ? 'See less' : 'See more'}
                       </Button>
                     )}
                   </Typography>
+
                   <Typography variant="caption" color="text.secondary" display="block" mt={1}>
-                    Category: {post.category}
+                    Category: {post.category || 'N/A'}
                   </Typography>
                 </CardContent>
 
                 {/* Dropdown menu */}
                 <Menu
                   anchorEl={anchorEl}
-                  open={menuPostId === post._id}
+                  open={menuPostId === postId}
                   onClose={handleMenuClose}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                 >
-                  <DropdownItem
+                  <MenuItem
                     onClick={() => {
                       handleMenuClose();
                       setSelectedPost(post);
                     }}
+                    sx={{ color: 'error.main' }}
                   >
                     Delete Post
-                  </DropdownItem>
+                  </MenuItem>
                 </Menu>
               </Card>
             );
@@ -243,7 +311,9 @@ const ReportedPosts = () => {
           <Typography>Are you sure you want to delete this post?</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setSelectedPost(null)} disabled={loading}>Cancel</Button>
+          <Button onClick={() => setSelectedPost(null)} disabled={loading}>
+            Cancel
+          </Button>
           <Button
             onClick={() => handleDelete(selectedPost._id)}
             color="error"
