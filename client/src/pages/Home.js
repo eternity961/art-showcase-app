@@ -65,8 +65,15 @@ function Home() {
     setOpenDialog(false);
   };
 
-  const handlePostUpdate = () => {
-    fetchPosts();
+  const handlePostUpdate = (updatedPost) => {
+    setPosts((prevPosts) =>
+      prevPosts.map((post) => (post._id === updatedPost._id ? updatedPost : post))
+    );
+  };
+
+  const handleDelete = (postId) => {
+    setPosts((prevPosts) => prevPosts.filter((post) => post._id !== postId));
+    setFilteredPosts((prevFiltered) => prevFiltered.filter((post) => post._id !== postId));
   };
 
   const handleDialogOpen = () => setOpenDialog(true);
@@ -181,7 +188,12 @@ function Home() {
               }}
             >
               {filteredPosts.map((post) => (
-                <PostCard key={post._id} post={post} onUpdate={handlePostUpdate} />
+                <PostCard
+                  key={post._id}
+                  post={post}
+                  onUpdate={handlePostUpdate}
+                  onDelete={handleDelete}
+                />
               ))}
             </Box>
           </Box>

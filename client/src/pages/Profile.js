@@ -20,6 +20,7 @@ import {
 import { useTheme } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
 import { Link as RouterLink } from 'react-router-dom';
+
 const categoryOptions = ['visual', 'vocal', 'literal'];
 
 function Profile() {
@@ -70,6 +71,16 @@ function Profile() {
     } catch (err) {
       console.error('Error updating profile:', err);
     }
+  };
+
+  const handleDelete = (postId) => {
+    setPosts((prevPosts) => prevPosts.filter((post) => post._id !== postId));
+  };
+
+  const handlePostUpdate = (updatedPost) => {
+    setPosts((prevPosts) =>
+      prevPosts.map((post) => (post._id === updatedPost._id ? updatedPost : post))
+    );
   };
 
   if (!profile) return null;
@@ -190,17 +201,17 @@ function Profile() {
                 </Button>
 
                 <Box sx={{ py: 4, textAlign: 'center' }}>
-  <Typography>
-    Do you want to change your password?{' '}
-    <Link
-      component={RouterLink}
-      to="/change-password"
-      sx={{ textDecoration: 'none', color: 'primary.main' }} // Customize as needed
-    >
-      Click Here
-    </Link>
-  </Typography>
-  </Box>
+                  <Typography>
+                    Do you want to change your password?{' '}
+                    <Link
+                      component={RouterLink}
+                      to="/change-password"
+                      sx={{ textDecoration: 'none', color: 'primary.main' }}
+                    >
+                      Click Here
+                    </Link>
+                  </Typography>
+                </Box>
               </Box>
             </CardContent>
           </Card>
@@ -252,7 +263,11 @@ function Profile() {
                 <Box key={post._id} sx={{ mb: 2 }}>
                   <Link to={`/post/${post._id}`} style={{ textDecoration: 'none' }}>
                     <Box>
-                      <PostCard post={post} />
+                      <PostCard
+                        post={post}
+                        onUpdate={handlePostUpdate}
+                        onDelete={handleDelete}
+                      />
                     </Box>
                   </Link>
                 </Box>
