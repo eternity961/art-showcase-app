@@ -45,7 +45,7 @@ exports.createPost = async (req, res) => {
         await createNotification({
           recipientId: judge._id,
           senderId: req.user.id,
-          type: 'judge',
+          type: 'post',
           message: `${sender.username} created a ${category} post.`,
           postId: post._id,
         });

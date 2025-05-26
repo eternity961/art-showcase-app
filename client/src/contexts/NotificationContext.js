@@ -26,7 +26,7 @@ export const NotificationProvider = ({ children }) => {
     // Optional: Poll every 30 seconds for new notifications
     const interval = setInterval(() => {
       loadNotifications();
-    }, 30000);
+    }, 4000);
 
     return () => clearInterval(interval);
   }, [loadNotifications]);
