@@ -21,6 +21,7 @@ import ResetPassword from './pages/ResetPassword';
 import VerifyOtp from './pages/VerifyOtp';
 import ProtectedRoute from './components/ProtectedRoute';
 import NotificationsPage from './pages/NotificationsPage';
+import ReportedPosts from './pages/ReportedPosts';
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
             <Route path="/" element={<Layout />}>
               <Route path="admin" element={<AdminDashboard />} />
+              <Route path="/reported-posts" element={<ReportedPosts />} />
             </Route>
           </Route>
 

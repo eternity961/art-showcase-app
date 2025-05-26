@@ -184,8 +184,8 @@ function Navbar() {
                     </Button>
                   )}
                   {user && user.role === 'admin' && (
-                    <Button color="inherit" component={Link} to="/admin">
-                      Admin
+                    <Button color="inherit" component={Link} to="/reported-posts">
+                      Manage Report
                     </Button>
                   )}
                   {user && user.role === 'judge' && (
