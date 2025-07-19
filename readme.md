@@ -126,7 +126,7 @@ This project is licensed under the MIT License.
 
 ## 🧠 Author
 
-Developed with ❤️ by Dereje Gultu and his team memebers as part of a final-year university project.
+Developed by Mikael Elias and his team memebers as part of a final-year university project.
 
 ---
 
